@@ -1,0 +1,39 @@
+RentEase/
+│
+├── README.md                     # Project overview, setup, and demo links
+├── SRS.md                        # Software Requirements Specification
+├── architecture.md               # System architecture with Mermaid diagrams
+├── ERD.md                        # Database schema and exclusion constraints
+├── API.md                        # API reference and RPC function definitions
+├── GIT_WORKFLOW.md               # This document
+├── ROADMAP.md                    # Development phases (MVP → V1 → V2)
+│
+├── /docs                         # Additional documentation
+│   └── /diagrams                 # Exported images (PNG) of the diagrams
+│       ├── architecture.png
+│       └── erd.png
+│
+├── /mobile-app                   # React Native source code
+│   ├── /src
+│   │   ├── /screens              # All screens (Home, Detail, Booking, Profile, etc.)
+│   │   ├── /components           # Reusable UI components
+│   │   ├── /services             # Supabase client, RPC calls, API wrappers
+│   │   ├── /hooks                # Custom React hooks (e.g., useAuth, useBookings)
+│   │   ├── /context              # State management (AuthContext, BookingContext)
+│   │   ├── /navigation           # Stack and tab navigation configuration
+│   │   ├── /utils                # Helper functions (date formatting, validations)
+│   │   └── /constants            # Colors, strings, configuration constants
+│   ├── /assets                   # Images, fonts, and static assets
+│   ├── App.js                    # Main app entry point
+│   ├── app.json                  # Expo configuration
+│   ├── package.json              # Dependencies and scripts
+│   └── .env.example              # Example environment variables file
+│
+├── /supabase                     # Supabase related files
+│   ├── /migrations               # SQL migration scripts (for version control)
+│   │   ├── 001_create_profiles.sql
+│   │   ├── 002_create_vehicles.sql
+│   │   └── 003_create_bookings.sql
+│   └── /seed                     # Seed data for testing (optional)
+│
+└── /scripts                      # Utility scripts (e.g., build, deploy helpers)
