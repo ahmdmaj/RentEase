@@ -8,13 +8,18 @@ import {
     ScrollView,
     Alert,
     ActivityIndicator,
+    Image,
+    Platform,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authstore';
 
 export default function AddVehicleScreen({ navigation }: any) {
     const { user } = useAuthStore();
     const [loading, setLoading] = useState(false);
+    const [images, setImages] = useState<string[]>([]);
 
     // Form state
     const [make, setMake] = useState('');
@@ -27,6 +32,112 @@ export default function AddVehicleScreen({ navigation }: any) {
     const [pricePerDay, setPricePerDay] = useState('');
     const [description, setDescription] = useState('');
 
+    // --- IMAGE PICKING LOGIC ---
+    const pickImages = async () => {
+        // Request permission
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            Alert.alert('Permission Required', 'Please allow access to your gallery to upload images.');
+            return;
+        }
+
+        // Launch image picker (allow multiple selection)
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            quality: 0.7, // Compress to save space
+            selectionLimit: 5,
+        });
+
+        if (!result.canceled && result.assets) {
+            // Extract the URIs (local paths) from the result
+            const selectedUris = result.assets.map(asset => asset.uri);
+            setImages(selectedUris);
+        }
+    };
+
+    // Remove a selected image (if user wants to deselect)
+    const removeImage = (indexToRemove: number) => {
+        setImages(images.filter((_, index) => index !== indexToRemove));
+    };
+
+    // --- UPLOAD FUNCTION ---
+    const uploadImages = async (vehicleId: string): Promise<boolean> => {
+        try {
+            for (let i = 0; i < images.length; i++) {
+                const uri = images[i];
+
+                // Generate a unique file name (using timestamp to avoid conflicts)
+                const fileExt = uri.split('.').pop();
+                const fileName = `${Date.now()}-${i}.${fileExt}`;
+                const filePath = `${vehicleId}/${fileName}`; // Store in a folder named after the vehicle
+
+                // Get current auth token for upload
+                const { data: sessionData } = await supabase.auth.getSession();
+                const token = sessionData.session?.access_token;
+
+                // Use Expo FileSystem to natively upload the file (bypasses RN fetch bugs)
+                const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+                const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+                console.log('[DEBUG-UPLOAD] Starting FileSystem upload to', `${supabaseUrl}/storage/v1/object/vehicle-images/${filePath}`);
+                const uploadResult = await FileSystem.uploadAsync(
+                    `${supabaseUrl}/storage/v1/object/vehicle-images/${filePath}`,
+                    uri,
+                    {
+                        httpMethod: 'POST',
+                        uploadType: 0, // 0 = BINARY_CONTENT
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            apikey: anonKey || '',
+                            'Content-Type': `image/${fileExt}`,
+                            'x-upsert': 'false',
+                        },
+                    }
+                );
+
+                console.log('[DEBUG-UPLOAD] FileSystem upload complete. Status:', uploadResult.status, 'Body:', uploadResult.body);
+
+                if (uploadResult.status !== 200) {
+                    console.error('[DEBUG-UPLOAD] Upload error for image', i, uploadResult);
+                    const errorResponse = JSON.parse(uploadResult.body || '{}');
+                    Alert.alert('Upload Failed', `Image ${i + 1} failed: ${errorResponse.message || uploadResult.body || 'Unknown error'}`);
+                    return false;
+                }
+
+                // Get the public URL
+                const { data: urlData } = supabase.storage
+                    .from('vehicle-images')
+                    .getPublicUrl(filePath);
+
+                const publicUrl = urlData.publicUrl;
+                console.log('[DEBUG-UPLOAD] Public URL generated:', publicUrl);
+
+                // Save the URL to the vehicle_images table
+                const { error: dbError } = await supabase
+                    .from('vehicle_images')
+                    .insert({
+                        vehicle_id: vehicleId,
+                        image_url: publicUrl,
+                        display_order: i,
+                    });
+
+                if (dbError) {
+                    console.error('[DEBUG-UPLOAD] DB insert error for image', i, dbError);
+                    Alert.alert('DB Error', `Failed to save image ${i + 1}: ${dbError.message}`);
+                    return false;
+                }
+                
+                console.log('[DEBUG-UPLOAD] DB insert complete for image', i);
+            }
+            return true;
+        } catch (error: any) {
+            console.error('[DEBUG-UPLOAD] Catch block triggered:', error);
+            Alert.alert('Upload Error', error.message);
+            return false;
+        }
+    };
+
+    // --- SUBMIT HANDLER (UPDATED) ---
     const handleSubmit = async () => {
         // Basic validation
         if (!make || !model || !location || !pricePerDay) {
@@ -36,7 +147,8 @@ export default function AddVehicleScreen({ navigation }: any) {
 
         setLoading(true);
 
-        const { data, error } = await supabase
+        // 1. Insert the vehicle first to get the ID
+        const { data: vehicleData, error: vehicleError } = await supabase
             .from('vehicles')
             .insert({
                 owner_id: user?.id,
@@ -54,22 +166,62 @@ export default function AddVehicleScreen({ navigation }: any) {
             .select()
             .single();
 
+        if (vehicleError) {
+            setLoading(false);
+            Alert.alert('Error', vehicleError.message);
+            return;
+        }
+
+        const vehicleId = vehicleData.id;
+
+        // 2. Upload images (if any were selected)
+        let uploadSuccess = true;
+        if (images.length > 0) {
+            uploadSuccess = await uploadImages(vehicleId);
+        }
+
         setLoading(false);
 
-        if (error) {
-            Alert.alert('Error', error.message);
+        if (uploadSuccess) {
+            Alert.alert('Success', 'Vehicle listed successfully with images!');
+            navigation.navigate('Home');
         } else {
-            Alert.alert('Success', 'Vehicle listed successfully!');
-            // Navigate back to Home and refresh the list
+            // Note: The vehicle is created, but images failed. We could delete the vehicle here, but for MVP we just inform the user.
+            Alert.alert('Partial Success', 'Vehicle created, but some images failed to upload. You can edit it later.');
             navigation.navigate('Home');
         }
     };
 
+    // --- RENDER UI ---
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
             <Text style={styles.title}>List Your Vehicle</Text>
             <Text style={styles.subtitle}>Earn money by renting out your car</Text>
 
+            {/* Image Upload Section */}
+            <View style={styles.imageSection}>
+                <Text style={styles.label}>Photos (Up to 5)</Text>
+                <View style={styles.imageRow}>
+                    {images.map((uri, index) => (
+                        <View key={index} style={styles.imageWrapper}>
+                            <Image source={{ uri }} style={styles.thumbnail} />
+                            <TouchableOpacity style={styles.removeImage} onPress={() => removeImage(index)}>
+                                <Text style={styles.removeText}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ))}
+                    {images.length < 5 && (
+                        <TouchableOpacity style={styles.addImageButton} onPress={pickImages}>
+                            <Text style={styles.addImageText}>+</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+                {images.length === 0 && (
+                    <Text style={styles.hint}>Tap '+' to select photos from gallery</Text>
+                )}
+            </View>
+
+            {/* Form Fields */}
             <View style={styles.inputContainer}>
                 <Text style={styles.label}>Make *</Text>
                 <TextInput style={styles.input} value={make} onChangeText={setMake} placeholder="e.g., Toyota" />
@@ -137,6 +289,7 @@ export default function AddVehicleScreen({ navigation }: any) {
     );
 }
 
+// --- STYLES (Updated with image styles) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },
     content: { padding: 20, paddingBottom: 40 },
@@ -154,4 +307,14 @@ const styles = StyleSheet.create({
     pickerTextSelected: { color: '#fff' },
     submitButton: { backgroundColor: '#16a34a', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16 },
     submitButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+    // Image Upload Styles
+    imageSection: { marginBottom: 20 },
+    imageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 },
+    imageWrapper: { width: 80, height: 80, borderRadius: 10, overflow: 'hidden', position: 'relative' },
+    thumbnail: { width: 80, height: 80, borderRadius: 10 },
+    removeImage: { position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, width: 20, height: 20, justifyContent: 'center', alignItems: 'center' },
+    removeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+    addImageButton: { width: 80, height: 80, borderRadius: 10, borderWidth: 2, borderColor: '#e2e8f0', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f1f5f9' },
+    addImageText: { fontSize: 32, color: '#94a3b8' },
+    hint: { fontSize: 12, color: '#94a3b8', marginTop: 6 },
 });

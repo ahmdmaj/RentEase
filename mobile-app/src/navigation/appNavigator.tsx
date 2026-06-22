@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screen/loginscreen';
 import SignupScreen from '../screen/signupscreen';
-import HomeScreen from '../screen/homescreen';
+import HomeScreen from '../screen/HomeScreen';
 import AddVehicleScreen from '../screen/AddVehicleScreen';
 
 import { useAuthStore } from '../store/authstore';
