@@ -11,10 +11,12 @@ import {
     Platform,
 } from 'react-native';
 import { useAuthStore } from '../store/authstore';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function SignupScreen({ navigation }: any) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const { signUp } = useAuthStore();
 
@@ -64,14 +66,22 @@ export default function SignupScreen({ navigation }: any) {
 
                 <View style={styles.inputContainer}>
                     <Text style={styles.label}>Password</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="•••••••• (min 6 chars)"
-                        placeholderTextColor="#94a3b8"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry
-                    />
+                    <View style={styles.passwordContainer}>
+                        <TextInput
+                            style={styles.passwordInput}
+                            placeholder="•••••••• (min 6 chars)"
+                            placeholderTextColor="#94a3b8"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={!showPassword}
+                        />
+                        <TouchableOpacity
+                            style={styles.eyeIcon}
+                            onPress={() => setShowPassword(!showPassword)}
+                        >
+                            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#94a3b8" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <TouchableOpacity
@@ -135,6 +145,25 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         fontSize: 16,
         color: '#1e293b',
+    },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        borderRadius: 12,
+    },
+    passwordInput: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        fontSize: 16,
+        color: '#1e293b',
+    },
+    eyeIcon: {
+        padding: 10,
+        marginRight: 4,
     },
     signupButton: {
         backgroundColor: '#16a34a',
