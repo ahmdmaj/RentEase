@@ -1,60 +1,101 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authstore';
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: any) {
     const { user, signOut } = useAuthStore();
+    const [vehicles, setVehicles] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchVehicles = async () => {
+        const { data, error } = await supabase
+            .from('vehicles')
+            .select('*, profiles(full_name)')
+            .eq('is_available', true)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            Alert.alert('Error', error.message);
+        } else {
+            setVehicles(data || []);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchVehicles();
+    }, []);
 
     const handleSignOut = async () => {
         await signOut();
         Alert.alert('Signed Out', 'You have been logged out.');
     };
 
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#2563eb" />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>🚗 RentEase</Text>
-            <Text style={styles.welcome}>Welcome, {user?.email}!</Text>
-            <Text style={styles.subtitle}>You are logged in.</Text>
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>RentEase</Text>
+                <View style={styles.headerRight}>
+                    <TouchableOpacity onPress={() => navigation.navigate('AddVehicle')}>
+                        <Text style={styles.addButton}>+ List Car</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleSignOut}>
+                        <Text style={styles.logoutButton}>Logout</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-                <Text style={styles.signOutButtonText}>Sign Out</Text>
-            </TouchableOpacity>
+            <FlatList
+                data={vehicles}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <TouchableOpacity style={styles.card} onPress={() => Alert.alert('Detail View', 'Coming soon!')}>
+                        <View style={styles.cardContent}>
+                            <Text style={styles.cardTitle}>{item.make} {item.model}</Text>
+                            <Text style={styles.cardSubtitle}>📍 {item.location}</Text>
+                            <Text style={styles.cardPrice}>LKR {item.price_per_day} / day</Text>
+                            {item.profiles && <Text style={styles.cardOwner}>👤 {item.profiles.full_name || 'Owner'}</Text>}
+                        </View>
+                    </TouchableOpacity>
+                )}
+                ListEmptyComponent={() => (
+                    <View style={styles.empty}>
+                        <Text style={styles.emptyText}>No vehicles available yet.</Text>
+                        <TouchableOpacity style={styles.emptyButton} onPress={() => navigation.navigate('AddVehicle')}>
+                            <Text style={styles.emptyButtonText}>+ List Your Car</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f8fafc',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
-        gap: 12,
-    },
-    title: {
-        fontSize: 40,
-        fontWeight: 'bold',
-        color: '#1e293b',
-    },
-    welcome: {
-        fontSize: 20,
-        color: '#334155',
-    },
-    subtitle: {
-        fontSize: 16,
-        color: '#64748b',
-    },
-    signOutButton: {
-        backgroundColor: '#ef4444',
-        borderRadius: 12,
-        paddingVertical: 14,
-        paddingHorizontal: 40,
-        marginTop: 20,
-    },
-    signOutButtonText: {
-        color: '#ffffff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
+    container: { flex: 1, backgroundColor: '#f8fafc' },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 60, paddingBottom: 20, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
+    headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1e293b' },
+    headerRight: { flexDirection: 'row', gap: 16, alignItems: 'center' },
+    addButton: { color: '#2563eb', fontWeight: '600', fontSize: 16 },
+    logoutButton: { color: '#ef4444', fontWeight: '500', fontSize: 14 },
+    card: { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 12, borderRadius: 12, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
+    cardContent: { gap: 4 },
+    cardTitle: { fontSize: 18, fontWeight: '600', color: '#1e293b' },
+    cardSubtitle: { fontSize: 14, color: '#64748b' },
+    cardPrice: { fontSize: 16, fontWeight: '700', color: '#16a34a', marginTop: 4 },
+    cardOwner: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
+    empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
+    emptyText: { fontSize: 16, color: '#94a3b8' },
+    emptyButton: { marginTop: 16, backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+    emptyButtonText: { color: '#fff', fontWeight: '600' },
 });
