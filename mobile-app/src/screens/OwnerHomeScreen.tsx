@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function OwnerHomeScreen({ navigation }: any) {
     const { user, signOut } = useAuthStore();
@@ -66,9 +67,6 @@ export default function OwnerHomeScreen({ navigation }: any) {
                 </View>
                 <View style={styles.headerRight}>
                     <Text style={styles.userRole}>Owner</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('AddVehicle')}>
-                        <Text style={styles.addButton}>+ Add</Text>
-                    </TouchableOpacity>
                     <TouchableOpacity onPress={handleSignOut}>
                         <Text style={styles.logoutButton}>Logout</Text>
                     </TouchableOpacity>
@@ -119,6 +117,7 @@ export default function OwnerHomeScreen({ navigation }: any) {
                         </View>
                     </TouchableOpacity>
                 )}
+                contentContainerStyle={{ paddingBottom: 120 }}
                 ListEmptyComponent={() => (
                     <View style={styles.empty}>
                         <Text style={styles.emptyText}>You haven't listed any vehicles yet.</Text>
@@ -128,6 +127,31 @@ export default function OwnerHomeScreen({ navigation }: any) {
                     </View>
                 )}
             />
+
+            {/* Bottom Navigation */}
+            <View style={styles.bottomNavContainer}>
+                <View style={styles.bottomNav}>
+                    <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+                        <Ionicons name="home-outline" size={28} color="#fff" />
+                    </TouchableOpacity>
+                    
+                    <View style={styles.fabWrapper}>
+                        <TouchableOpacity 
+                            style={styles.fabBackground} 
+                            onPress={() => navigation.navigate('AddVehicle')}
+                            activeOpacity={0.9}
+                        >
+                            <View style={styles.fabInner}>
+                                <Ionicons name="add" size={36} color="#fff" />
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
+                    <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+                        <Ionicons name="person-outline" size={28} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
     );
 }
@@ -205,4 +229,55 @@ const styles = StyleSheet.create({
     emptyText: { fontSize: 16, color: '#94a3b8' },
     emptyButton: { marginTop: 16, backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
     emptyButtonText: { color: '#fff', fontWeight: '600' },
+    bottomNavContainer: {
+        position: 'absolute',
+        bottom: 24,
+        left: 20,
+        right: 20,
+        alignItems: 'center',
+    },
+    bottomNav: {
+        flexDirection: 'row',
+        backgroundColor: '#0F9D58',
+        width: '100%',
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    navItem: {
+        padding: 8,
+    },
+    fabWrapper: {
+        top: -24,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fabBackground: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        elevation: 5,
+    },
+    fabInner: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#F5A623',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
