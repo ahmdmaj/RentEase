@@ -11,12 +11,14 @@ import {
     Image,
     Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
 
 export default function AddVehicleScreen({ navigation }: any) {
+    const insets = useSafeAreaInsets();
     const { user } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [images, setImages] = useState<string[]>([]);
@@ -194,7 +196,11 @@ export default function AddVehicleScreen({ navigation }: any) {
 
     // --- RENDER UI ---
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView 
+            style={styles.container} 
+            contentContainerStyle={[styles.content, { paddingTop: insets.top + 10 }]}
+            keyboardShouldPersistTaps="handled"
+        >
             <Text style={styles.title}>List Your Vehicle</Text>
             <Text style={styles.subtitle}>Earn money by renting out your car</Text>
 
@@ -292,7 +298,7 @@ export default function AddVehicleScreen({ navigation }: any) {
 // --- STYLES (Updated with image styles) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },
-    content: { padding: 20, paddingBottom: 40 },
+    content: { padding: 20, paddingBottom: 100 },
     title: { fontSize: 28, fontWeight: 'bold', color: '#1e293b' },
     subtitle: { fontSize: 16, color: '#64748b', marginBottom: 24 },
     inputContainer: { marginBottom: 16 },
