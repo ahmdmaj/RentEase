@@ -14,7 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authstore';
+import { useAuthStore } from '../store/authStore';
 
 export default function AddVehicleScreen({ navigation }: any) {
     const { user } = useAuthStore();

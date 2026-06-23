@@ -10,35 +10,28 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-import { useAuthStore } from '../store/authstore';
+import { useAuthStore } from '../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function SignupScreen({ navigation }: any) {
+export default function LoginScreen({ navigation }: any) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { signUp } = useAuthStore();
+    const { signIn } = useAuthStore();
 
-    const handleSignup = async () => {
+    const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
 
-        if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters');
-            return;
-        }
-
         setLoading(true);
-        const { error } = await signUp(email, password);
+        const { error } = await signIn(email, password);
         setLoading(false);
 
         if (error) {
-            Alert.alert('Signup Failed', error.message);
-        } else {
-            Alert.alert('Success', 'Account created! You are now logged in.');
+            Alert.alert('Login Failed', error.message);
         }
     };
 
@@ -48,8 +41,8 @@ export default function SignupScreen({ navigation }: any) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={styles.innerContainer}>
-                <Text style={styles.title}>Create Account</Text>
-                <Text style={styles.subtitle}>Start renting vehicles today</Text>
+                <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.subtitle}>Sign in to continue</Text>
 
                 <View style={styles.inputContainer}>
                     <Text style={styles.label}>Email</Text>
@@ -69,7 +62,7 @@ export default function SignupScreen({ navigation }: any) {
                     <View style={styles.passwordContainer}>
                         <TextInput
                             style={styles.passwordInput}
-                            placeholder="•••••••• (min 6 chars)"
+                            placeholder="••••••••"
                             placeholderTextColor="#94a3b8"
                             value={password}
                             onChangeText={setPassword}
@@ -85,20 +78,20 @@ export default function SignupScreen({ navigation }: any) {
                 </View>
 
                 <TouchableOpacity
-                    style={styles.signupButton}
-                    onPress={handleSignup}
+                    style={styles.loginButton}
+                    onPress={handleLogin}
                     disabled={loading}
                 >
                     {loading ? (
                         <ActivityIndicator color="#ffffff" />
                     ) : (
-                        <Text style={styles.signupButtonText}>Create Account</Text>
+                        <Text style={styles.loginButtonText}>Sign In</Text>
                     )}
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                    <Text style={styles.loginText}>
-                        Already have an account? <Text style={styles.loginLink}>Sign In</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+                    <Text style={styles.signupText}>
+                        Don't have an account? <Text style={styles.signupLink}>Sign Up</Text>
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -165,25 +158,25 @@ const styles = StyleSheet.create({
         padding: 10,
         marginRight: 4,
     },
-    signupButton: {
-        backgroundColor: '#16a34a',
+    loginButton: {
+        backgroundColor: '#2563eb',
         borderRadius: 12,
         paddingVertical: 16,
         alignItems: 'center',
         marginTop: 8,
     },
-    signupButtonText: {
+    loginButtonText: {
         color: '#ffffff',
         fontSize: 16,
         fontWeight: '600',
     },
-    loginText: {
+    signupText: {
         marginTop: 20,
         textAlign: 'center',
         color: '#64748b',
         fontSize: 14,
     },
-    loginLink: {
+    signupLink: {
         color: '#2563eb',
         fontWeight: '600',
     },

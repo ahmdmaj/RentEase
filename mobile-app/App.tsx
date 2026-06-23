@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { supabase } from './src/services/supabase';
-import { useAuthStore } from './src/store/authstore';
+import { useAuthStore } from './src/store/authStore';
 import AppNavigator from './src/navigation/appNavigator';
 
 export default function App() {
