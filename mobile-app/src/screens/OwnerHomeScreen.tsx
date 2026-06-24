@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     StyleSheet,
     Text,
@@ -8,16 +8,26 @@ import {
     ActivityIndicator,
     Alert,
     RefreshControl,
+    Animated,
 } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function OwnerHomeScreen({ navigation }: any) {
     const { user, signOut } = useAuthStore();
     const [vehicles, setVehicles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const fabScale = useRef(new Animated.Value(1)).current;
+
+    const onFabPressIn = () => {
+        Animated.spring(fabScale, { toValue: 0.92, useNativeDriver: true, speed: 30 }).start();
+    };
+    const onFabPressOut = () => {
+        Animated.spring(fabScale, { toValue: 1, useNativeDriver: true, speed: 20 }).start();
+    };
 
     const fetchMyVehicles = async () => {
         const { data, error } = await supabase
@@ -132,23 +142,35 @@ export default function OwnerHomeScreen({ navigation }: any) {
             <View style={styles.bottomNavContainer}>
                 <View style={styles.bottomNav}>
                     <TouchableOpacity style={styles.navItem} onPress={() => {}}>
-                        <Ionicons name="home-outline" size={28} color="#fff" />
+                        <Ionicons name="home" size={24} color="#fff" />
+                        <Text style={styles.navLabel}>Home</Text>
                     </TouchableOpacity>
-                    
+
+                    {/* Central FAB */}
                     <View style={styles.fabWrapper}>
-                        <TouchableOpacity 
-                            style={styles.fabBackground} 
-                            onPress={() => navigation.navigate('AddVehicle')}
-                            activeOpacity={0.9}
-                        >
-                            <View style={styles.fabInner}>
-                                <Ionicons name="add" size={36} color="#fff" />
-                            </View>
-                        </TouchableOpacity>
+                        <Animated.View style={{ transform: [{ scale: fabScale }] }}>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('AddVehicle')}
+                                onPressIn={onFabPressIn}
+                                onPressOut={onFabPressOut}
+                                activeOpacity={1}
+                            >
+                                <LinearGradient
+                                    colors={['#3B82F6', '#1D4ED8']}
+                                    style={styles.fabGradient}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                >
+                                    <Ionicons name="add" size={30} color="#fff" />
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </Animated.View>
+                        <Text style={styles.fabLabel}>Add Vehicle</Text>
                     </View>
 
                     <TouchableOpacity style={styles.navItem} onPress={() => {}}>
-                        <Ionicons name="person-outline" size={28} color="#fff" />
+                        <Ionicons name="person" size={24} color="rgba(255,255,255,0.6)" />
+                        <Text style={[styles.navLabel, { color: 'rgba(255,255,255,0.6)' }]}>Profile</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -231,53 +253,59 @@ const styles = StyleSheet.create({
     emptyButtonText: { color: '#fff', fontWeight: '600' },
     bottomNavContainer: {
         position: 'absolute',
-        bottom: 24,
-        left: 20,
-        right: 20,
-        alignItems: 'center',
+        bottom: 20,
+        left: 16,
+        right: 16,
     },
     bottomNav: {
         flexDirection: 'row',
-        backgroundColor: '#0F9D58',
+        backgroundColor: '#1e293b',
         width: '100%',
-        height: 64,
-        borderRadius: 32,
+        height: 68,
+        borderRadius: 34,
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 40,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 6,
+        paddingHorizontal: 32,
+        shadowColor: '#1e293b',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 16,
+        elevation: 10,
     },
     navItem: {
-        padding: 8,
+        alignItems: 'center',
+        gap: 2,
+        paddingHorizontal: 8,
+    },
+    navLabel: {
+        fontSize: 10,
+        color: '#fff',
+        fontWeight: '500',
+        marginTop: 2,
     },
     fabWrapper: {
-        top: -24,
-        justifyContent: 'center',
         alignItems: 'center',
+        top: -28,
     },
-    fabBackground: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
-        backgroundColor: '#f8fafc',
+    fabGradient: {
+        width: 62,
+        height: 62,
+        borderRadius: 31,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        elevation: 5,
+        shadowColor: '#3B82F6',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.55,
+        shadowRadius: 10,
+        elevation: 12,
+        borderWidth: 3,
+        borderColor: '#f8fafc',
     },
-    fabInner: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: '#F5A623',
-        justifyContent: 'center',
-        alignItems: 'center',
+    fabLabel: {
+        fontSize: 10,
+        color: '#3B82F6',
+        fontWeight: '700',
+        marginTop: 6,
+        letterSpacing: 0.3,
     },
 });
