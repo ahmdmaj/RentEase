@@ -6,8 +6,9 @@ import { ActivityIndicator, View, Text } from 'react-native';
 // Import screens
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
-import HomeScreen from '../screens/HomeScreen';          // Renter view
-import OwnerHomeScreen from '../screens/OwnerHomeScreen'; // Owner view
+import OwnerLoginScreen from '../screens/OwnerLoginScreen'; // Owner login
+import HomeScreen from '../screens/HomeScreen';             // Renter view
+import OwnerHomeScreen from '../screens/OwnerHomeScreen';   // Owner view
 import AddVehicleScreen from '../screens/AddVehicleScreen';
 import VehicleDetailScreen from '../screens/VehicleDetailScreen';
 
@@ -76,6 +77,7 @@ export default function AppNavigator() {
                     <>
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Signup" component={SignupScreen} />
+                        <Stack.Screen name="OwnerLogin" component={OwnerLoginScreen} />
                     </>
                 )}
             </Stack.Navigator>
