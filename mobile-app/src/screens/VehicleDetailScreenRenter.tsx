@@ -181,7 +181,7 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
                 {/* Book Button */}
                 <TouchableOpacity
                     style={styles.bookButton}
-                    onPress={() => Alert.alert('Booking', 'Booking feature coming soon!')}
+                    onPress={() => navigation.navigate('Booking', { vehicle: vehicle })}
                 >
                     <Text style={styles.bookButtonText}>📅 Book This Vehicle</Text>
                 </TouchableOpacity>
