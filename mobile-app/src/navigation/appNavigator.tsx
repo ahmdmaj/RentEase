@@ -7,6 +7,7 @@ import { ActivityIndicator, View, Text } from 'react-native';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import OwnerLoginScreen from '../screens/OwnerLoginScreen'; // Owner login
+import OwnerSignupScreen from '../screens/OwnerSignupScreen'; // Owner signup
 import HomeScreen from '../screens/HomeScreen';             // Renter view
 import OwnerHomeScreen from '../screens/OwnerHomeScreen';   // Owner view
 import AddVehicleScreen from '../screens/AddVehicleScreen';
@@ -35,10 +36,20 @@ export default function AppNavigator() {
                     .from('profiles')
                     .select('role')
                     .eq('id', user.id)
-                    .single();
+                    .maybeSingle(); // returns null instead of error when 0 rows
 
                 if (error) throw error;
-                setUserRole(data?.role || 'renter');
+
+                if (data) {
+                    setUserRole(data.role || 'renter');
+                } else {
+                    // Profile row missing — create it now as a fallback
+                    await supabase.from('profiles').upsert({
+                        id: user.id,
+                        role: 'renter',
+                    });
+                    setUserRole('renter');
+                }
             } catch (error) {
                 console.error('Error fetching role:', error);
                 setUserRole('renter');
@@ -78,6 +89,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Signup" component={SignupScreen} />
                         <Stack.Screen name="OwnerLogin" component={OwnerLoginScreen} />
+                        <Stack.Screen name="OwnerSignup" component={OwnerSignupScreen} />
                     </>
                 )}
             </Stack.Navigator>

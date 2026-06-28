@@ -154,6 +154,17 @@ export default function OwnerLoginScreen({ navigation }: any) {
                         <Text style={styles.renterButtonText}>Sign in as a Renter instead</Text>
                     </TouchableOpacity>
 
+                    {/* Register as Owner */}
+                    <TouchableOpacity
+                        style={styles.registerButton}
+                        onPress={() => navigation.navigate('OwnerSignup')}
+                    >
+                        <Text style={styles.registerText}>
+                            New owner?{' '}
+                            <Text style={styles.registerLink}>Create an owner account</Text>
+                        </Text>
+                    </TouchableOpacity>
+
                 </View>
             </LinearGradient>
         </KeyboardAvoidingView>
@@ -291,6 +302,19 @@ const styles = StyleSheet.create({
     renterButtonText: {
         color: '#3B82F6',
         fontSize: 14,
+        fontWeight: '600',
+    },
+    registerButton: {
+        alignItems: 'center',
+        paddingVertical: 10,
+        marginTop: 4,
+    },
+    registerText: {
+        fontSize: 14,
+        color: '#64748b',
+    },
+    registerLink: {
+        color: '#60a5fa',
         fontWeight: '600',
     },
 });
