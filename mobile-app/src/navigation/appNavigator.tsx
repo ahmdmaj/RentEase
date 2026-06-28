@@ -11,7 +11,7 @@ import OwnerSignupScreen from '../screens/OwnerSignupScreen'; // Owner signup
 import HomeScreen from '../screens/HomeScreen';             // Renter view
 import OwnerHomeScreen from '../screens/OwnerHomeScreen';   // Owner view
 import AddVehicleScreen from '../screens/AddVehicleScreen';
-import VehicleDetailScreen from '../screens/VehicleDetailScreen';
+import VehicleDetailScreen from '../screens/VehicleDetailScreenRenter';
 
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../services/supabase';
