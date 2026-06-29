@@ -46,8 +46,11 @@ export default function OwnerHomeScreen({ navigation }: any) {
     };
 
     useEffect(() => {
-        fetchMyVehicles();
-    }, []);
+        const unsubscribe = navigation.addListener('focus', () => {
+            fetchMyVehicles();
+        });
+        return unsubscribe;
+    }, [navigation]);
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -114,7 +117,7 @@ export default function OwnerHomeScreen({ navigation }: any) {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.card}
-                        onPress={() => navigation.navigate('VehicleDetail', { vehicleId: item.id })}
+                        onPress={() => navigation.navigate('EditVehicle', { vehicleId: item.id })}
                     >
                         <View style={styles.cardContent}>
                             <View style={styles.cardHeader}>
@@ -144,7 +147,7 @@ export default function OwnerHomeScreen({ navigation }: any) {
             {/* Bottom Navigation */}
             <View style={styles.bottomNavContainer}>
                 <View style={styles.bottomNav}>
-                    <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+                    <TouchableOpacity style={styles.navItem} onPress={() => { }}>
                         <Ionicons name="home" size={24} color="#fff" />
                         <Text style={styles.navLabel}>Home</Text>
                     </TouchableOpacity>
@@ -171,7 +174,7 @@ export default function OwnerHomeScreen({ navigation }: any) {
                         <Text style={styles.fabLabel}>Add Vehicle</Text>
                     </View>
 
-                    <TouchableOpacity style={styles.navItem} onPress={() => {}}>
+                    <TouchableOpacity style={styles.navItem} onPress={() => { }}>
                         <Ionicons name="person" size={24} color="rgba(255,255,255,0.6)" />
                         <Text style={[styles.navLabel, { color: 'rgba(255,255,255,0.6)' }]}>Profile</Text>
                     </TouchableOpacity>

@@ -45,8 +45,11 @@ export default function HomeScreen({ navigation }: any) {
   };
 
   useEffect(() => {
-    fetchVehicles();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchVehicles();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   // Apply Search & Filters
   const applyFilters = () => {
