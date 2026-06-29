@@ -76,6 +76,9 @@ export default function OwnerHomeScreen({ navigation }: any) {
                     <Text style={styles.headerSubtitle}>Manage your vehicles</Text>
                 </View>
                 <View style={styles.headerRight}>
+                    <TouchableOpacity onPress={() => navigation.navigate('OwnerBookings')}>
+                        <Ionicons name="calendar-outline" size={24} color="#1e293b" />
+                    </TouchableOpacity>
                     <Text style={styles.userRole}>Owner</Text>
                     <TouchableOpacity onPress={handleSignOut}>
                         <Text style={styles.logoutButton}>Logout</Text>

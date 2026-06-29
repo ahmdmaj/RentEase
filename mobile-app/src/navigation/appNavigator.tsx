@@ -16,6 +16,8 @@ import VehicleDetailScreen from '../screens/VehicleDetailScreenRenter';
 import ProfileScreen from '../screens/ProfileScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import BookingScreen from '../screens/BookingScreen';
+import OwnerBookingsScreen from '../screens/OwnerBookingsScreen';
+import MyBookingsScreen from '../screens/MyBookingsScreen';
 
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../services/supabase';
@@ -90,6 +92,8 @@ export default function AppNavigator() {
                         <Stack.Screen name="VehicleDetail" component={VehicleDetailScreen} />
                         <Stack.Screen name="Profile" component={ProfileScreen} />
                         <Stack.Screen name="Booking" component={BookingScreen} />
+                        <Stack.Screen name="OwnerBookings" component={OwnerBookingsScreen} />
+                        <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
                     </>
                 ) : (
                     <>

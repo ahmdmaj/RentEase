@@ -115,6 +115,9 @@ export default function HomeScreen({ navigation }: any) {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>🚗 RentEase</Text>
         <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => navigation.navigate('MyBookings')}>
+            <Ionicons name="calendar-outline" size={24} color="#1e293b" />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
             <Ionicons name="person-circle-outline" size={32} color="#1e293b" />
           </TouchableOpacity>
