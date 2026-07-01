@@ -33,12 +33,24 @@ export default function AppNavigator() {
 
     // Fetch user role from profiles table
     useEffect(() => {
-        const fetchUserRole = async () => {
-            if (!user) {
-                setRoleLoading(false);
-                return;
-            }
+        let isMounted = true;
 
+        if (!user) {
+            setRoleLoading(false);
+            return;
+        }
+
+        setRoleLoading(true);
+
+        const timeoutId = setTimeout(() => {
+            if (isMounted && roleLoading) {
+                console.warn('Role fetch timed out. Defaulting to renter.');
+                setUserRole('renter');
+                setRoleLoading(false);
+            }
+        }, 3000);
+
+        const fetchUserRole = async () => {
             try {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -48,25 +60,35 @@ export default function AppNavigator() {
 
                 if (error) throw error;
 
-                if (data) {
-                    setUserRole(data.role || 'renter');
-                } else {
-                    // Profile row missing — create it now as a fallback
-                    await supabase.from('profiles').upsert({
-                        id: user.id,
-                        role: 'renter',
-                    });
-                    setUserRole('renter');
+                if (isMounted) {
+                    if (data) {
+                        setUserRole(data.role || 'renter');
+                    } else {
+                        // Profile row missing — create it now as a fallback
+                        await supabase.from('profiles').upsert({
+                            id: user.id,
+                            role: 'renter',
+                        });
+                        setUserRole('renter');
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching role:', error);
-                setUserRole('renter');
+                if (isMounted) setUserRole('renter');
             } finally {
-                setRoleLoading(false);
+                if (isMounted) {
+                    clearTimeout(timeoutId);
+                    setRoleLoading(false);
+                }
             }
         };
 
         fetchUserRole();
+
+        return () => {
+            isMounted = false;
+            clearTimeout(timeoutId);
+        };
     }, [user]);
 
     if (loading || roleLoading) {

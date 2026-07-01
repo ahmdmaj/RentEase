@@ -5,27 +5,54 @@ import AppNavigator from './src/navigation/appNavigator';
 import * as SplashScreen from 'expo-splash-screen';
 
 // Prevent the splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
   const { setSession } = useAuthStore();
 
   useEffect(() => {
+    let isMounted = true;
+
+    // Safety fallback: ensure loading spinner never gets stuck if storage/network hangs
+    const timeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Session check timed out. Proceeding to login screen.');
+        setSession(null);
+        SplashScreen.hideAsync().catch(() => {});
+      }
+    }, 3000);
+
     // Check current session on app load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      // Hide the splash screen AFTER we have checked the session
-      SplashScreen.hideAsync();
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (isMounted) {
+          clearTimeout(timeoutId);
+          setSession(session);
+          SplashScreen.hideAsync().catch(() => {});
+        }
+      })
+      .catch((error) => {
+        console.error('Error checking session:', error);
+        if (isMounted) {
+          clearTimeout(timeoutId);
+          setSession(null);
+          SplashScreen.hideAsync().catch(() => {});
+        }
+      });
 
     // Listen for auth changes (sign in, sign out)
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
+        if (isMounted) {
+          setSession(session);
+        }
       }
     );
 
     return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
       authListener?.subscription.unsubscribe();
     };
   }, []);
