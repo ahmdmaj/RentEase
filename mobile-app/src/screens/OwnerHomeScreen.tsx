@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function OwnerHomeScreen({ navigation }: any) {
     const { user, signOut } = useAuthStore();
     const [vehicles, setVehicles] = useState<any[]>([]);
+    const [pendingRequests, setPendingRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const fabScale = useRef(new Animated.Value(1)).current;
@@ -29,32 +30,99 @@ export default function OwnerHomeScreen({ navigation }: any) {
         Animated.spring(fabScale, { toValue: 1, useNativeDriver: true, speed: 20 }).start();
     };
 
-    const fetchMyVehicles = async () => {
-        const { data, error } = await supabase
+    const hasShownLoginAlert = useRef(false);
+
+    const fetchDashboardData = async () => {
+        if (!user) return;
+
+        const vehiclesRes = await supabase
             .from('vehicles')
             .select('*')
-            .eq('owner_id', user?.id)
+            .eq('owner_id', user.id)
             .order('created_at', { ascending: false });
 
-        if (error) {
-            Alert.alert('Error', error.message);
-        } else {
-            setVehicles(data || []);
+        if (vehiclesRes.error) {
+            Alert.alert('Error', vehiclesRes.error.message);
+            setLoading(false);
+            setRefreshing(false);
+            return;
         }
+
+        const myVehicles = vehiclesRes.data || [];
+        setVehicles(myVehicles);
+
+        if (myVehicles.length > 0) {
+            const vehicleIds = myVehicles.map(v => v.id);
+            const pendingRes = await supabase
+                .from('bookings')
+                .select('id')
+                .in('vehicle_id', vehicleIds)
+                .eq('status', 'pending');
+
+            if (!pendingRes.error) {
+                const pendingList = pendingRes.data || [];
+                setPendingRequests(pendingList);
+
+                // If owner just logged in / loaded dashboard and has pending requests, show popup alert
+                if (!hasShownLoginAlert.current && pendingList.length > 0) {
+                    hasShownLoginAlert.current = true;
+                    Alert.alert(
+                        '🔔 Action Required!',
+                        `You have ${pendingList.length} pending booking request(s) waiting for approval.`,
+                        [
+                            { text: 'Dismiss', style: 'cancel' },
+                            { text: 'Review Now', onPress: () => navigation.navigate('OwnerBookings') }
+                        ]
+                    );
+                }
+            }
+        } else {
+            setPendingRequests([]);
+        }
+
         setLoading(false);
         setRefreshing(false);
     };
 
     useEffect(() => {
+        fetchDashboardData();
         const unsubscribe = navigation.addListener('focus', () => {
-            fetchMyVehicles();
+            fetchDashboardData();
         });
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation, user]);
+
+    // Real-time listener for incoming booking requests
+    useEffect(() => {
+        if (!user) return;
+
+        const channel = supabase
+            .channel('owner_dashboard_live_bookings')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'bookings' },
+                () => {
+                    fetchDashboardData();
+                    Alert.alert(
+                        '🔔 New Booking Request!',
+                        'A renter just submitted a new booking request for one of your vehicles.',
+                        [
+                            { text: 'Later', style: 'cancel' },
+                            { text: 'Review Now', onPress: () => navigation.navigate('OwnerBookings') }
+                        ]
+                    );
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user]);
 
     const onRefresh = () => {
         setRefreshing(true);
-        fetchMyVehicles();
+        fetchDashboardData();
     };
 
     const handleSignOut = async () => {
@@ -70,6 +138,8 @@ export default function OwnerHomeScreen({ navigation }: any) {
         );
     }
 
+    const pendingCount = pendingRequests.length;
+
     return (
         <View style={styles.container}>
             {/* Header */}
@@ -79,15 +149,54 @@ export default function OwnerHomeScreen({ navigation }: any) {
                     <Text style={styles.headerSubtitle}>Manage your vehicles</Text>
                 </View>
                 <View style={styles.headerRight}>
-                    <TouchableOpacity onPress={() => navigation.navigate('OwnerBookings')}>
-                        <Ionicons name="calendar-outline" size={24} color="#1e293b" />
+                    <TouchableOpacity
+                        style={[
+                            styles.requestsButton,
+                            pendingCount > 0 ? styles.requestsButtonPending : styles.requestsButtonEmpty
+                        ]}
+                        onPress={() => navigation.navigate('OwnerBookings')}
+                    >
+                        <Ionicons
+                            name="calendar"
+                            size={18}
+                            color={pendingCount > 0 ? '#fff' : '#475569'}
+                        />
+                        <Text
+                            style={[
+                                styles.requestsButtonText,
+                                pendingCount > 0 ? styles.requestsButtonTextPending : styles.requestsButtonTextEmpty
+                            ]}
+                        >
+                            {pendingCount} Pending
+                        </Text>
                     </TouchableOpacity>
-                    <Text style={styles.userRole}>Owner</Text>
                     <TouchableOpacity onPress={handleSignOut}>
                         <Text style={styles.logoutButton}>Logout</Text>
                     </TouchableOpacity>
                 </View>
             </View>
+
+            {/* Notification Banner when pending requests exist */}
+            {pendingCount > 0 && (
+                <TouchableOpacity
+                    style={styles.alertBanner}
+                    onPress={() => navigation.navigate('OwnerBookings')}
+                    activeOpacity={0.85}
+                >
+                    <View style={styles.alertBannerIcon}>
+                        <Ionicons name="notifications" size={24} color="#d97706" />
+                    </View>
+                    <View style={styles.alertBannerContent}>
+                        <Text style={styles.alertBannerTitle}>🔔 Action Required!</Text>
+                        <Text style={styles.alertBannerSubtitle}>
+                            You have {pendingCount} pending booking request{pendingCount > 1 ? 's' : ''} waiting for approval.
+                        </Text>
+                    </View>
+                    <View style={styles.alertBannerButton}>
+                        <Text style={styles.alertBannerButtonText}>Review ➔</Text>
+                    </View>
+                </TouchableOpacity>
+            )}
 
             {/* Stats */}
             <View style={styles.statsContainer}>
@@ -200,18 +309,82 @@ const styles = StyleSheet.create({
     },
     headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1e293b' },
     headerSubtitle: { fontSize: 14, color: '#64748b' },
-    headerRight: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-    userRole: {
-        backgroundColor: '#dcfce7',
-        color: '#16a34a',
+    headerRight: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+    requestsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
         paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-        fontSize: 12,
-        fontWeight: '500',
+        paddingVertical: 6,
+        borderRadius: 20,
+        gap: 6,
     },
-    addButton: { color: '#2563eb', fontWeight: '600', fontSize: 16 },
+    requestsButtonEmpty: {
+        backgroundColor: '#f1f5f9',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    requestsButtonPending: {
+        backgroundColor: '#ef4444',
+        shadowColor: '#ef4444',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    requestsButtonText: {
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    requestsButtonTextEmpty: {
+        color: '#475569',
+    },
+    requestsButtonTextPending: {
+        color: '#fff',
+    },
     logoutButton: { color: '#ef4444', fontWeight: '500', fontSize: 14 },
+    alertBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fef3c7',
+        marginHorizontal: 16,
+        marginTop: 12,
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#fde68a',
+        shadowColor: '#d97706',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    alertBannerIcon: {
+        marginRight: 12,
+    },
+    alertBannerContent: {
+        flex: 1,
+    },
+    alertBannerTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#92400e',
+    },
+    alertBannerSubtitle: {
+        fontSize: 13,
+        color: '#b45309',
+        marginTop: 2,
+    },
+    alertBannerButton: {
+        backgroundColor: '#f59e0b',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    alertBannerButtonText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 13,
+    },
     statsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',

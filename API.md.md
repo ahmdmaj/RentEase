@@ -142,7 +142,7 @@ BEGIN
     END IF;
 
     -- 4. Calculate total price (number of days * price_per_day)
-    v_total_price := EXTRACT(DAY FROM (p_end_date - p_start_date)) * v_price_per_day;
+    v_total_price := (p_end_date - p_start_date) * v_price_per_day;
 
     -- 5. Insert the booking (status = 'pending')
     INSERT INTO bookings (

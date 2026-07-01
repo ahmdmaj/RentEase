@@ -38,6 +38,11 @@ export default function BookingScreen({ route, navigation }: any) {
     const bookingDetails = calculateTotal();
 
     const handleConfirmBooking = async () => {
+        if (!user || !user.id) {
+            Alert.alert('Authentication Required', 'Please log in to book a vehicle.');
+            return;
+        }
+
         if (!startDate || !endDate) {
             Alert.alert('Error', 'Please select both start and end dates.');
             return;
@@ -55,36 +60,58 @@ export default function BookingScreen({ route, navigation }: any) {
         const start = startDate.toISOString().split('T')[0];
         const end = endDate.toISOString().split('T')[0];
 
-        const { data, error } = await supabase.rpc('check_and_create_booking', {
-            p_vehicle_id: vehicle.id,
-            p_renter_id: user?.id,
-            p_start_date: start,
-            p_end_date: end,
-        });
+        // Perform direct availability check & insertion to bypass any remote SQL EXTRACT errors
+        try {
+            const { data: overlappingBookings, error: overlapError } = await supabase
+                .from('bookings')
+                .select('id')
+                .eq('vehicle_id', vehicle.id)
+                .eq('status', 'approved')
+                .lte('start_date', end)
+                .gte('end_date', start);
 
-        setLoading(false);
+            if (overlapError) {
+                setLoading(false);
+                Alert.alert('Error checking availability', overlapError.message);
+                return;
+            }
 
-        if (error) {
-            Alert.alert('Error', error.message);
-            return;
-        }
+            if (overlappingBookings && overlappingBookings.length > 0) {
+                setLoading(false);
+                Alert.alert('Unavailable', 'Vehicle is already booked for the selected dates.');
+                return;
+            }
 
-        if (data && data.success === false) {
-            Alert.alert('Unavailable', data.error || 'Vehicle is not available for the selected dates.');
-            return;
-        }
+            const totalPrice = days * vehicle.price_per_day;
+            const { data: insertData, error: insertError } = await supabase
+                .from('bookings')
+                .insert({
+                    vehicle_id: vehicle.id,
+                    renter_id: user.id,
+                    start_date: start,
+                    end_date: end,
+                    total_price: totalPrice,
+                    status: 'pending',
+                })
+                .select()
+                .single();
 
-        if (data && data.success === true) {
+            setLoading(false);
+
+            if (insertError) {
+                // If RPC or DB trigger throws an error, format nicely
+                Alert.alert('Booking Error', insertError.message || 'Failed to submit booking.');
+                return;
+            }
+
             Alert.alert(
                 'Booking Request Sent! 🎉',
-                `Your booking has been submitted for ${vehicle.make} ${vehicle.model}.\n\nTotal: LKR ${data.total_price}\nStatus: ${data.status}`,
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => navigation.navigate('Home'),
-                    },
-                ]
+                `Your booking has been submitted for ${vehicle.make} ${vehicle.model}.\n\nTotal: LKR ${totalPrice}\nStatus: pending`,
+                [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
             );
+        } catch (error: any) {
+            setLoading(false);
+            Alert.alert('Error', error?.message || 'An unexpected error occurred while booking.');
         }
     };
 
