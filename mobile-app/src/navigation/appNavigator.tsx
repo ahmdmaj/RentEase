@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, Text } from 'react-native';
@@ -7,10 +7,8 @@ import { ActivityIndicator, View, Text } from 'react-native';
 // Import screens
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
-import OwnerLoginScreen from '../screens/OwnerLoginScreen'; // Owner login
-import OwnerSignupScreen from '../screens/OwnerSignupScreen'; // Owner signup
-import HomeScreen from '../screens/HomeScreen';             // Renter view
-import OwnerHomeScreen from '../screens/OwnerHomeScreen';   // Owner view
+import HomeScreen from '../screens/HomeScreen';             // Unified home for all users
+import MyListingsScreen from '../screens/MyListingsScreen'; // Owner listing management (via drawer)
 import AddVehicleScreen from '../screens/AddVehicleScreen';
 import VehicleDetailScreen from '../screens/VehicleDetailScreenRenter';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -21,77 +19,14 @@ import MyBookingsScreen from '../screens/MyBookingsScreen';
 import EditVehicleScreen from '../screens/EditVehicleScreen';
 
 import { useAuthStore } from '../store/authStore';
-import { supabase } from '../services/supabase';
 
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-    const { session, user, loading } = useAuthStore();
-    const [userRole, setUserRole] = useState<string | null>(null);
-    const [roleLoading, setRoleLoading] = useState(true);
+    const { session, loading } = useAuthStore();
 
-    // Fetch user role from profiles table
-    useEffect(() => {
-        let isMounted = true;
-
-        if (!user) {
-            setRoleLoading(false);
-            return;
-        }
-
-        setRoleLoading(true);
-
-        const timeoutId = setTimeout(() => {
-            if (isMounted && roleLoading) {
-                console.warn('Role fetch timed out. Defaulting to renter.');
-                setUserRole('renter');
-                setRoleLoading(false);
-            }
-        }, 3000);
-
-        const fetchUserRole = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .maybeSingle(); // returns null instead of error when 0 rows
-
-                if (error) throw error;
-
-                if (isMounted) {
-                    if (data) {
-                        setUserRole(data.role || 'renter');
-                    } else {
-                        // Profile row missing — create it now as a fallback
-                        await supabase.from('profiles').upsert({
-                            id: user.id,
-                            role: 'renter',
-                        });
-                        setUserRole('renter');
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching role:', error);
-                if (isMounted) setUserRole('renter');
-            } finally {
-                if (isMounted) {
-                    clearTimeout(timeoutId);
-                    setRoleLoading(false);
-                }
-            }
-        };
-
-        fetchUserRole();
-
-        return () => {
-            isMounted = false;
-            clearTimeout(timeoutId);
-        };
-    }, [user]);
-
-    if (loading || roleLoading) {
+    if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8fafc' }}>
                 <ActivityIndicator size="large" color="#2563eb" />
@@ -105,12 +40,9 @@ export default function AppNavigator() {
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {session ? (
                     <>
-                        {/* Show different Home based on role */}
-                        {userRole === 'owner' ? (
-                            <Stack.Screen name="Home" component={OwnerHomeScreen} />
-                        ) : (
-                            <Stack.Screen name="Home" component={HomeScreen} />
-                        )}
+                        {/* All logged-in users go to the same HomeScreen */}
+                        <Stack.Screen name="Home" component={HomeScreen} />
+                        <Stack.Screen name="MyListings" component={MyListingsScreen} />
                         <Stack.Screen name="AddVehicle" component={AddVehicleScreen} />
                         <Stack.Screen name="VehicleDetail" component={VehicleDetailScreen} />
                         <Stack.Screen name="Profile" component={ProfileScreen} />
@@ -124,8 +56,6 @@ export default function AppNavigator() {
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Signup" component={SignupScreen} />
                         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-                        <Stack.Screen name="OwnerLogin" component={OwnerLoginScreen} />
-                        <Stack.Screen name="OwnerSignup" component={OwnerSignupScreen} />
                     </>
                 )}
             </Stack.Navigator>

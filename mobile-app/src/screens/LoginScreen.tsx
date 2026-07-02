@@ -94,7 +94,7 @@ export default function LoginScreen({ navigation }: any) {
                         {loading ? (
                             <ActivityIndicator color="#ffffff" />
                         ) : (
-                            <Text style={styles.loginButtonText}>Sign In as Renter</Text>
+                            <Text style={styles.loginButtonText}>Sign In</Text>
                         )}
                     </TouchableOpacity>
 
@@ -109,26 +109,6 @@ export default function LoginScreen({ navigation }: any) {
                         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                     </TouchableOpacity>
 
-                    {/* Divider */}
-                    <View style={styles.dividerRow}>
-                        <View style={styles.dividerLine} />
-                        <Text style={styles.dividerText}>or</Text>
-                        <View style={styles.dividerLine} />
-                    </View>
-
-                    {/* Owner Login Button */}
-                    <TouchableOpacity
-                        style={styles.ownerButton}
-                        onPress={() => navigation.navigate('OwnerLogin')}
-                        activeOpacity={0.85}
-                    >
-                        <View style={styles.ownerButtonInner}>
-                            <Ionicons name="car-sport-outline" size={20} color="#1e293b" />
-                            <Text style={styles.ownerButtonText}>Login as an Owner</Text>
-                            <Ionicons name="chevron-forward" size={18} color="#64748b" />
-                        </View>
-                    </TouchableOpacity>
-                    <Text style={styles.ownerHint}>Have vehicles to list? Access your owner dashboard</Text>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -218,53 +198,6 @@ const styles = StyleSheet.create({
     signupLink: {
         color: '#2563eb',
         fontWeight: '600',
-    },
-    dividerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 28,
-        marginBottom: 20,
-    },
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#e2e8f0',
-    },
-    dividerText: {
-        marginHorizontal: 12,
-        fontSize: 13,
-        color: '#94a3b8',
-        fontWeight: '500',
-    },
-    ownerButton: {
-        backgroundColor: '#ffffff',
-        borderWidth: 1.5,
-        borderColor: '#1e293b',
-        borderRadius: 12,
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    ownerButtonInner: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    ownerButtonText: {
-        flex: 1,
-        marginLeft: 10,
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#1e293b',
-    },
-    ownerHint: {
-        marginTop: 8,
-        textAlign: 'center',
-        fontSize: 12,
-        color: '#94a3b8',
     },
     forgotPasswordText: {
         textAlign: 'center',
