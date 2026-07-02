@@ -154,8 +154,8 @@ export default function HomeScreen({ navigation }: any) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>🚗 RentEase</Text>
-        <TouchableOpacity onPress={openDrawer} style={styles.profileIconBtn}>
-          <Ionicons name="person-circle-outline" size={34} color="#2563eb" />
+        <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.notificationIconBtn}>
+          <Ionicons name="notifications-outline" size={28} color="#1e293b" />
         </TouchableOpacity>
       </View>
 
@@ -394,7 +394,7 @@ export default function HomeScreen({ navigation }: any) {
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
-            <Text style={styles.fabLabel}>My Listings</Text>
+
           </View>
 
           <TouchableOpacity style={styles.navItem} onPress={openDrawer}>
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1e293b' },
-  profileIconBtn: { padding: 4 },
+  notificationIconBtn: { padding: 4 },
 
   // Drawer
   drawerOverlay: {
