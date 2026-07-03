@@ -39,7 +39,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+    const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'completed'>('all');
 
     const fetchBookings = async () => {
         if (!user) return;
@@ -91,6 +91,32 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                             Alert.alert('Error', error.message);
                         } else {
                             Alert.alert('Success', `Booking ${newStatus} successfully!`);
+                            fetchBookings();
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
+    const handleCompleteBooking = async (bookingId: string) => {
+        Alert.alert(
+            'Complete Booking',
+            'Has this vehicle been returned and the rental period ended?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Yes, Complete',
+                    onPress: async () => {
+                        const { error } = await supabase
+                            .from('bookings')
+                            .update({ status: 'completed' })
+                            .eq('id', bookingId);
+
+                        if (error) {
+                            Alert.alert('Error', error.message);
+                        } else {
+                            Alert.alert('Success', 'Booking marked as completed!');
                             fetchBookings();
                         }
                     },
@@ -196,6 +222,15 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                     </Text>
                     <Text style={[styles.statLabel, filter === 'rejected' && styles.statLabelActive]}>Rejected</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.statItem, filter === 'completed' && styles.statItemActive]}
+                    onPress={() => setFilter('completed')}
+                >
+                    <Text style={[styles.statNumber, filter === 'completed' && styles.statNumberActive]}>
+                        {getStatusCount('completed')}
+                    </Text>
+                    <Text style={[styles.statLabel, filter === 'completed' && styles.statLabelActive]}>Done</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Booking List */}
@@ -258,6 +293,17 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                                     onPress={() => handleStatusUpdate(item.id, 'rejected')}
                                 >
                                     <Text style={styles.actionButtonText}>❌ Reject</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {item.status === 'approved' && (
+                            <View style={styles.cardActions}>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.completeButton]}
+                                    onPress={() => handleCompleteBooking(item.id)}
+                                >
+                                    <Text style={styles.actionButtonText}>✅ Mark as Completed</Text>
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -461,6 +507,9 @@ const styles = StyleSheet.create({
     },
     rejectButton: {
         backgroundColor: '#ef4444',
+    },
+    completeButton: {
+        backgroundColor: '#8b5cf6', // Purple color
     },
     actionButtonText: {
         color: '#fff',
