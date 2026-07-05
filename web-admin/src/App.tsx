@@ -1,32 +1,33 @@
-import { useEffect, useState } from 'react';
-import { supabase } from './lib/supabase';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Layout from './pages/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import OwnerApprovals from './pages/OwnerApprovals';
+import Users from './pages/Users';
+import Vehicles from './pages/Vehicles';
+import Bookings from './pages/Bookings';
 import './App.css';
 
 function App() {
-  const [status, setStatus] = useState('Connecting...');
-
-  useEffect(() => {
-    const testConnection = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('count', { count: 'exact', head: true });
-
-        if (error) throw error;
-        setStatus('✅ Connected to Supabase successfully!');
-      } catch (error: any) {
-        setStatus('❌ Error: ' + error.message);
-      }
-    };
-
-    testConnection();
-  }, []);
-
   return (
-    <div className="app">
-      <h1>RentEase Admin Panel</h1>
-      <p style={{ fontSize: '18px', marginTop: '20px' }}>{status}</p>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/approvals" element={<OwnerApprovals />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/vehicles" element={<Vehicles />} />
+              <Route path="/bookings" element={<Bookings />} />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
