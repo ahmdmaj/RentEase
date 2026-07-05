@@ -11,6 +11,7 @@ import {
     Dimensions,
 } from 'react-native';
 import { supabase } from '../services/supabase';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -77,7 +78,17 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
     const ownerPhone = vehicle.profiles?.phone || 'Not provided';
 
     return (
-        <ScrollView style={styles.container} bounces={false}>
+        <View style={styles.container}>
+            {/* Fixed Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1e293b" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>{vehicle.make} {vehicle.model}</Text>
+                <View style={{ width: 24 }} />
+            </View>
+
+            <ScrollView style={styles.scrollContainer} bounces={false}>
             {/* Image Carousel */}
             <View style={styles.imageContainer}>
                 {images.length > 0 ? (
@@ -188,7 +199,8 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
 
                 <View style={styles.bottomSpacer} />
             </View>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
@@ -196,6 +208,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f8fafc',
+    },
+    scrollContainer: {
+        flex: 1,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 60,
+        paddingBottom: 16,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+    },
+    backButton: { padding: 4 },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#1e293b',
     },
     centered: {
         flex: 1,

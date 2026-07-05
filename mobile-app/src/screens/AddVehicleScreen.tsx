@@ -16,6 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AddVehicleScreen({ navigation }: any) {
     const insets = useSafeAreaInsets();
@@ -196,13 +197,23 @@ export default function AddVehicleScreen({ navigation }: any) {
 
     // --- RENDER UI ---
     return (
-        <ScrollView 
-            style={styles.container} 
-            contentContainerStyle={[styles.content, { paddingTop: insets.top + 10 }]}
-            keyboardShouldPersistTaps="handled"
-        >
-            <Text style={styles.title}>List Your Vehicle</Text>
-            <Text style={styles.subtitle}>Earn money by renting out your car</Text>
+        <View style={styles.container}>
+            {/* Fixed Header */}
+            <View style={[styles.header, { paddingTop: Math.max(insets.top + 16, 50) }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1e293b" />
+                </TouchableOpacity>
+                <View style={styles.headerTitleGroup}>
+                    <Text style={styles.headerTitle}>List Your Vehicle</Text>
+                    <Text style={styles.headerSubtitle}>Earn money by renting out your car</Text>
+                </View>
+            </View>
+
+            <ScrollView 
+                style={styles.scrollContainer} 
+                contentContainerStyle={styles.content}
+                keyboardShouldPersistTaps="handled"
+            >
 
             {/* Image Upload Section */}
             <View style={styles.imageSection}>
@@ -291,16 +302,30 @@ export default function AddVehicleScreen({ navigation }: any) {
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitButtonText}>List Vehicle</Text>}
             </TouchableOpacity>
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
 // --- STYLES (Updated with image styles) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },
+    scrollContainer: { flex: 1 },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+        gap: 12,
+    },
+    backButton: { padding: 4 },
+    headerTitleGroup: { flex: 1 },
+    headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#1e293b' },
+    headerSubtitle: { fontSize: 13, color: '#64748b' },
     content: { padding: 20, paddingBottom: 100 },
-    title: { fontSize: 28, fontWeight: 'bold', color: '#1e293b' },
-    subtitle: { fontSize: 16, color: '#64748b', marginBottom: 24 },
     inputContainer: { marginBottom: 16 },
     label: { fontSize: 14, fontWeight: '500', color: '#334155', marginBottom: 6 },
     input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },

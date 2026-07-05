@@ -146,15 +146,17 @@ export default function EditVehicleScreen({ route, navigation }: any) {
     }
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            {/* Header */}
+        <View style={styles.container}>
+            {/* Fixed Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={28} color="#1e293b" />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1e293b" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Edit Vehicle</Text>
-                <View style={{ width: 28 }} />
+                <View style={{ width: 24 }} />
             </View>
+
+            <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content}>
 
             {/* Availability Toggle */}
             <View style={styles.availabilityContainer}>
@@ -246,21 +248,29 @@ export default function EditVehicleScreen({ route, navigation }: any) {
             </TouchableOpacity>
 
             <View style={styles.bottomSpacer} />
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },
+    scrollContainer: { flex: 1 },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     content: { padding: 20, paddingBottom: 40 },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingBottom: 24,
+        paddingHorizontal: 20,
+        paddingTop: 60,
+        paddingBottom: 16,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
     },
-    headerTitle: { fontSize: 20, fontWeight: '600', color: '#1e293b' },
+    backButton: { padding: 4 },
+    headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1e293b' },
     sectionLabel: { fontSize: 16, fontWeight: '600', color: '#1e293b', marginBottom: 12 },
     availabilityContainer: { marginBottom: 20 },
     toggleContainer: { flexDirection: 'row', gap: 12 },

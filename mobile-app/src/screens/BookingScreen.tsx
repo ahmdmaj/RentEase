@@ -141,15 +141,17 @@ export default function BookingScreen({ route, navigation }: any) {
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            {/* Header */}
+        <View style={styles.container}>
+            {/* Fixed Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={28} color="#1e293b" />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#1e293b" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Book Vehicle</Text>
-                <View style={{ width: 28 }} />
+                <View style={{ width: 24 }} />
             </View>
+
+            <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content}>
 
             {/* Vehicle Summary */}
             <View style={styles.summaryCard}>
@@ -264,7 +266,8 @@ export default function BookingScreen({ route, navigation }: any) {
                     minimumDate={getMinEndDate()}
                 />
             )}
-        </ScrollView>
+            </ScrollView>
+        </View>
     );
 }
 
@@ -273,20 +276,29 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f8fafc',
     },
+    scrollContainer: {
+        flex: 1,
+    },
     content: {
         paddingHorizontal: 20,
         paddingBottom: 40,
+        paddingTop: 16,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        paddingHorizontal: 20,
         paddingTop: 60,
-        paddingBottom: 24,
+        paddingBottom: 16,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
     },
+    backButton: { padding: 4 },
     headerTitle: {
         fontSize: 20,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#1e293b',
     },
     summaryCard: {
