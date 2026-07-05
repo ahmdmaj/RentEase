@@ -211,9 +211,9 @@ export default function MyListingsScreen({ navigation }: any) {
                         <View style={styles.cardContent}>
                             <View style={styles.cardHeader}>
                                 <Text style={styles.cardTitle}>{item.make} {item.model}</Text>
-                                <View style={[styles.statusBadge, { backgroundColor: item.is_available ? '#dcfce7' : '#fee2e2' }]}>
-                                    <Text style={[styles.statusText, { color: item.is_available ? '#16a34a' : '#dc2626' }]}>
-                                        {item.is_available ? 'Available' : 'Unavailable'}
+                                <View style={[styles.statusBadge, { backgroundColor: item.is_available ? '#dcfce7' : '#fef9c3' }]}>
+                                    <Text style={[styles.statusText, { color: item.is_available ? '#16a34a' : '#ca8a04' }]}>
+                                        {item.is_available ? '✅ Approved & Listed' : '⏳ Under Admin Check'}
                                     </Text>
                                 </View>
                             </View>

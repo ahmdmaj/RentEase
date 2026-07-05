@@ -164,7 +164,7 @@ export default function AddVehicleScreen({ navigation }: any) {
                 location,
                 price_per_day: parseFloat(pricePerDay),
                 description,
-                is_available: true,
+                is_available: false, // Must be granted by admin before appearing on site
             })
             .select()
             .single();
@@ -186,12 +186,17 @@ export default function AddVehicleScreen({ navigation }: any) {
         setLoading(false);
 
         if (uploadSuccess) {
-            Alert.alert('Success', 'Vehicle listed successfully with images!');
-            navigation.navigate('Home');
+            Alert.alert(
+                '⏳ Under Admin Check',
+                'Your vehicle details have been submitted and are under admin check. Once granted by the admin, your vehicle will be listed on the site soon!',
+                [{ text: 'Got It', onPress: () => navigation.navigate('Home') }]
+            );
         } else {
-            // Note: The vehicle is created, but images failed. We could delete the vehicle here, but for MVP we just inform the user.
-            Alert.alert('Partial Success', 'Vehicle created, but some images failed to upload. You can edit it later.');
-            navigation.navigate('Home');
+            Alert.alert(
+                '⏳ Under Admin Check',
+                'Your vehicle has been submitted and is under admin check. Some images failed to upload, but you can edit them later. Once granted by the admin, it will be listed on the site soon!',
+                [{ text: 'Got It', onPress: () => navigation.navigate('Home') }]
+            );
         }
     };
 

@@ -40,7 +40,7 @@ export default function Login() {
         <div className="login-container">
             <div className="login-card">
                 <h1>🚗 RentEase Admin</h1>
-                <p className="login-subtitle">Sign in to manage the platform</p>
+                <p className="login-subtitle">Login to manage the platform</p>
 
                 {error && <div className="login-error">{error}</div>}
 
@@ -68,7 +68,7 @@ export default function Login() {
                     </div>
 
                     <button type="submit" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
             </div>

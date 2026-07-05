@@ -90,7 +90,6 @@ export default function EditVehicleScreen({ route, navigation }: any) {
                 location,
                 price_per_day: parseFloat(pricePerDay),
                 description,
-                is_available: isAvailable,
             })
             .eq('id', vehicleId)
             .eq('owner_id', user?.id);
@@ -158,22 +157,16 @@ export default function EditVehicleScreen({ route, navigation }: any) {
 
             <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content}>
 
-            {/* Availability Toggle */}
+            {/* Listing & Approval Status Banner */}
             <View style={styles.availabilityContainer}>
-                <Text style={styles.sectionLabel}>🔘 Availability</Text>
-                <View style={styles.toggleContainer}>
-                    <TouchableOpacity
-                        style={[styles.toggleOption, isAvailable && styles.toggleActive]}
-                        onPress={() => setIsAvailable(true)}
-                    >
-                        <Text style={[styles.toggleText, isAvailable && styles.toggleTextActive]}>✅ Available</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.toggleOption, !isAvailable && styles.toggleInactive]}
-                        onPress={() => setIsAvailable(false)}
-                    >
-                        <Text style={[styles.toggleText, !isAvailable && styles.toggleTextInactive]}>🚫 Unavailable</Text>
-                    </TouchableOpacity>
+                <Text style={styles.sectionLabel}>📌 Listing & Approval Status</Text>
+                <View style={[styles.statusBanner, { backgroundColor: isAvailable ? '#dcfce7' : '#fef9c3', padding: 14, borderRadius: 10, marginTop: 6, borderWidth: 1, borderColor: isAvailable ? '#86efac' : '#fde047' }]}>
+                    <Text style={{ color: isAvailable ? '#16a34a' : '#ca8a04', fontWeight: '700', fontSize: 15 }}>
+                        {isAvailable ? '✅ Granted & Listed on Site' : '⏳ Under Admin Check'}
+                    </Text>
+                    <Text style={{ color: '#475569', fontSize: 13, marginTop: 4, lineHeight: 18 }}>
+                        {isAvailable ? 'Your vehicle has been granted by the admin and is visible to renters.' : 'Your vehicle is currently under admin check. Once granted by the admin, it will be listed on the site soon.'}
+                    </Text>
                 </View>
             </View>
 
