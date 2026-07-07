@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
     headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#1e293b' },
     sectionLabel: { fontSize: 16, fontWeight: '600', color: '#1e293b', marginBottom: 12 },
     availabilityContainer: { marginBottom: 20 },
+    statusBanner: {},
     toggleContainer: { flexDirection: 'row', gap: 12 },
     toggleOption: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: 'transparent' },
     toggleActive: { backgroundColor: '#dcfce7', borderColor: '#22c55e' },
