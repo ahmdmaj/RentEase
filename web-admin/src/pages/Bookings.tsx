@@ -31,7 +31,6 @@ export default function Bookings() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<FilterStatus>('all');
     const [search, setSearch] = useState('');
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     const fetchBookings = async () => {
         setLoading(true);
@@ -57,23 +56,6 @@ export default function Bookings() {
     useEffect(() => {
         fetchBookings();
     }, []);
-
-    const handleStatusUpdate = async (bookingId: string, newStatus: string) => {
-        if (!window.confirm(`Set this booking to "${newStatus}"?`)) return;
-        setActionLoading(bookingId);
-        try {
-            const { error } = await supabase
-                .from('bookings')
-                .update({ status: newStatus })
-                .eq('id', bookingId);
-            if (error) throw error;
-            await fetchBookings();
-        } catch (err: any) {
-            alert('Error: ' + err.message);
-        } finally {
-            setActionLoading(null);
-        }
-    };
 
     const filtered = bookings.filter((b) => {
         const matchesFilter = filter === 'all' || b.status === filter;
@@ -115,8 +97,8 @@ export default function Bookings() {
             {/* Header */}
             <div className="admin-page-header">
                 <div>
-                    <h1>📅 Bookings</h1>
-                    <p className="page-subtitle">{bookings.length} total bookings across the platform</p>
+                    <h1>📅 Bookings (Read-Only)</h1>
+                    <p className="page-subtitle">{bookings.length} total bookings. Approvals & rejections are managed directly by vehicle owners.</p>
                 </div>
                 <button className="refresh-btn" onClick={fetchBookings}>🔄 Refresh</button>
             </div>
@@ -169,7 +151,6 @@ export default function Bookings() {
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th>Booked</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -205,43 +186,6 @@ export default function Bookings() {
                                     </td>
                                     <td>
                                         <span className="cell-secondary">{formatDate(b.created_at)}</span>
-                                    </td>
-                                    <td>
-                                        <div className="action-btns">
-                                            {b.status === 'pending' && (
-                                                <>
-                                                    <button
-                                                        className="action-btn approve"
-                                                        disabled={actionLoading === b.id}
-                                                        onClick={() => handleStatusUpdate(b.id, 'approved')}
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        className="action-btn reject"
-                                                        disabled={actionLoading === b.id}
-                                                        onClick={() => handleStatusUpdate(b.id, 'rejected')}
-                                                    >
-                                                        Reject
-                                                    </button>
-                                                </>
-                                            )}
-                                            {b.status === 'approved' && (
-                                                <button
-                                                    className="action-btn complete"
-                                                    disabled={actionLoading === b.id}
-                                                    onClick={() => handleStatusUpdate(b.id, 'completed')}
-                                                >
-                                                    Complete
-                                                </button>
-                                            )}
-                                            {actionLoading === b.id && (
-                                                <span className="action-loading">...</span>
-                                            )}
-                                            {(b.status === 'completed' || b.status === 'cancelled' || b.status === 'rejected') && (
-                                                <span className="no-action">—</span>
-                                            )}
-                                        </div>
                                     </td>
                                 </tr>
                             ))}

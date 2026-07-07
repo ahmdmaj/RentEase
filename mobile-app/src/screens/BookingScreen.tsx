@@ -105,8 +105,8 @@ export default function BookingScreen({ route, navigation }: any) {
             }
 
             Alert.alert(
-                'Booking Request Sent! 🎉',
-                `Your booking has been submitted for ${vehicle.make} ${vehicle.model}.\n\nTotal: LKR ${totalPrice}\nStatus: pending`,
+                'Booking Request Sent to Owner! 🎉',
+                `Your booking request for ${vehicle.make} ${vehicle.model} has been sent directly to the vehicle owner.\n\nTotal: LKR ${totalPrice}\nStatus: Pending Owner Approval\n\nThe owner has been notified and will review, accept, or reject your booking request shortly. You can check the status anytime in My Bookings!`,
                 [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
             );
         } catch (error: any) {

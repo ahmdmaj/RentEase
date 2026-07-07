@@ -127,6 +127,36 @@ export default function ProfileScreen({ navigation }: any) {
                 </Text>
             </View>
 
+            {/* Quick Activity & Requests Menu */}
+            <View style={styles.menuCard}>
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => navigation.navigate('MyBookings')}
+                >
+                    <Ionicons name="calendar-outline" size={22} color="#2563eb" />
+                    <Text style={styles.menuText}>My Bookings</Text>
+                    <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </TouchableOpacity>
+                <View style={styles.menuDivider} />
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => navigation.navigate('MyListings')}
+                >
+                    <Ionicons name="car-sport-outline" size={22} color="#2563eb" />
+                    <Text style={styles.menuText}>Your Listings</Text>
+                    <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </TouchableOpacity>
+                <View style={styles.menuDivider} />
+                <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => navigation.navigate('OwnerBookings')}
+                >
+                    <Ionicons name="clipboard-outline" size={22} color="#2563eb" />
+                    <Text style={styles.menuText}>Booking Requests</Text>
+                    <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </TouchableOpacity>
+            </View>
+
             {/* Email (Read-only) */}
             <View style={styles.inputContainer}>
                 <Text style={styles.label}>📧 Email</Text>
@@ -242,6 +272,36 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         fontSize: 14,
         fontWeight: '500',
+    },
+    menuCard: {
+        backgroundColor: '#fff',
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    menuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 14,
+        gap: 12,
+    },
+    menuText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#1e293b',
+    },
+    menuDivider: {
+        height: 1,
+        backgroundColor: '#f1f5f9',
     },
     inputContainer: {
         marginBottom: 20,

@@ -208,6 +208,14 @@ export default function HomeScreen({ navigation }: any) {
               <Ionicons name="car-sport-outline" size={22} color="#2563eb" />
               <Text style={styles.drawerMenuText}>Your Listings</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.drawerMenuItem}
+              onPress={() => { closeDrawer(); navigation.navigate('OwnerBookings'); }}
+            >
+              <Ionicons name="clipboard-outline" size={22} color="#2563eb" />
+              <Text style={styles.drawerMenuText}>Booking Requests</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Logout at Bottom */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,8 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../services/supabase';
+import { useAuthStore } from '../store/authStore';
 
 interface NotificationItem {
   id: string;
@@ -16,6 +20,7 @@ interface NotificationItem {
   time: string;
   type: 'booking' | 'system' | 'promo';
   read: boolean;
+  targetScreen?: string;
 }
 
 const INITIAL_NOTIFICATIONS: NotificationItem[] = [
@@ -46,7 +51,110 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export default function NotificationsScreen({ navigation }: any) {
+  const { user } = useAuthStore();
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const formatTimeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / (1000 * 60));
+    if (mins < 60) return `${Math.max(1, mins)}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
+  const fetchNotifications = async () => {
+    if (!user) {
+      setNotifications(INITIAL_NOTIFICATIONS);
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
+    try {
+      const dynamicList: NotificationItem[] = [];
+
+      // 1. Fetch pending bookings for vehicles owned by this user (if owner)
+      const { data: ownerBookings } = await supabase
+        .from('bookings')
+        .select(`
+          id,
+          total_price,
+          status,
+          created_at,
+          vehicles!inner ( make, model, owner_id ),
+          profiles ( full_name )
+        `)
+        .eq('vehicles.owner_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (ownerBookings && ownerBookings.length > 0) {
+        ownerBookings.forEach((b: any) => {
+          dynamicList.push({
+            id: `owner-${b.id}`,
+            title: '🚗 New Booking Request!',
+            message: `${b.profiles?.full_name || 'A renter'} requested to book your ${b.vehicles?.make} ${b.vehicles?.model} for LKR ${b.total_price}. Tap to review and Accept or Reject!`,
+            time: formatTimeAgo(b.created_at),
+            type: 'booking',
+            read: false,
+            targetScreen: 'OwnerBookings',
+          });
+        });
+      }
+
+      // 2. Fetch approved/rejected bookings for this renter
+      const { data: renterBookings } = await supabase
+        .from('bookings')
+        .select(`
+          id,
+          total_price,
+          status,
+          created_at,
+          vehicles ( make, model )
+        `)
+        .eq('renter_id', user.id)
+        .in('status', ['approved', 'rejected'])
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (renterBookings && renterBookings.length > 0) {
+        renterBookings.forEach((b: any) => {
+          const isApproved = b.status === 'approved';
+          dynamicList.push({
+            id: `renter-${b.id}`,
+            title: isApproved ? '✅ Booking Approved!' : '❌ Booking Rejected',
+            message: `Your booking request for ${b.vehicles?.make} ${b.vehicles?.model} was ${b.status} by the vehicle owner.`,
+            time: formatTimeAgo(b.created_at),
+            type: 'booking',
+            read: false,
+            targetScreen: 'MyBookings',
+          });
+        });
+      }
+
+      // Combine with system tips
+      setNotifications([...dynamicList, ...INITIAL_NOTIFICATIONS]);
+    } catch (err) {
+      console.error('Error loading notifications:', err);
+      setNotifications(INITIAL_NOTIFICATIONS);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [user]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchNotifications();
+  };
 
   const markAllAsRead = () => {
     setNotifications(notifications.map(item => ({ ...item, read: true })));
@@ -62,6 +170,14 @@ export default function NotificationsScreen({ navigation }: any) {
         return { name: 'information-circle', color: '#f59e0b', bg: '#fef3c7' };
     }
   };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -80,6 +196,7 @@ export default function NotificationsScreen({ navigation }: any) {
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => {
           const iconInfo = getIconForType(item.type);
@@ -90,6 +207,9 @@ export default function NotificationsScreen({ navigation }: any) {
                 setNotifications(
                   notifications.map(n => (n.id === item.id ? { ...n, read: true } : n))
                 );
+                if (item.targetScreen) {
+                  navigation.navigate(item.targetScreen);
+                }
               }}
               activeOpacity={0.8}
             >
