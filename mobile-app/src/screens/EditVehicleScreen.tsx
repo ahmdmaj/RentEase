@@ -12,6 +12,8 @@ import {
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
+import DropdownPicker from '../components/DropdownPicker';
+import { VEHICLE_MAKES, VEHICLE_MODELS, SRI_LANKA_DISTRICTS } from '../constants/vehicleData';
 
 export default function EditVehicleScreen({ route, navigation }: any) {
     const { vehicleId } = route.params;
@@ -22,15 +24,20 @@ export default function EditVehicleScreen({ route, navigation }: any) {
 
     // Form state
     const [make, setMake] = useState('');
+    const [customMake, setCustomMake] = useState('');
     const [model, setModel] = useState('');
+    const [customModel, setCustomModel] = useState('');
     const [year, setYear] = useState('');
     const [transmission, setTransmission] = useState('Automatic');
     const [fuelType, setFuelType] = useState('Petrol');
     const [seatingCapacity, setSeatingCapacity] = useState('');
     const [location, setLocation] = useState('');
+    const [customLocation, setCustomLocation] = useState('');
     const [pricePerDay, setPricePerDay] = useState('');
     const [description, setDescription] = useState('');
     const [isAvailable, setIsAvailable] = useState(true);
+
+    const modelOptions = make && VEHICLE_MODELS[make] ? VEHICLE_MODELS[make] : ['Other'];
 
     useEffect(() => {
         fetchVehicleDetails();
@@ -47,13 +54,33 @@ export default function EditVehicleScreen({ route, navigation }: any) {
             if (error) throw error;
 
             if (data) {
-                setMake(data.make);
-                setModel(data.model);
+                if (VEHICLE_MAKES.includes(data.make)) {
+                    setMake(data.make);
+                } else {
+                    setMake('Other');
+                    setCustomMake(data.make);
+                }
+
+                const brandModels = VEHICLE_MODELS[data.make] || [];
+                if (brandModels.includes(data.model)) {
+                    setModel(data.model);
+                } else {
+                    setModel('Other');
+                    setCustomModel(data.model);
+                }
+
                 setYear(data.year?.toString() || '');
                 setTransmission(data.transmission || 'Automatic');
                 setFuelType(data.fuel_type || 'Petrol');
                 setSeatingCapacity(data.seating_capacity?.toString() || '');
-                setLocation(data.location);
+
+                if (SRI_LANKA_DISTRICTS.includes(data.location)) {
+                    setLocation(data.location);
+                } else {
+                    setLocation('Other');
+                    setCustomLocation(data.location);
+                }
+
                 setPricePerDay(data.price_per_day?.toString() || '');
                 setDescription(data.description || '');
                 setIsAvailable(data.is_available);
@@ -71,7 +98,11 @@ export default function EditVehicleScreen({ route, navigation }: any) {
             return;
         }
 
-        if (!make || !model || !location || !pricePerDay) {
+        const finalMake = make === 'Other' ? customMake.trim() : make;
+        const finalModel = model === 'Other' ? customModel.trim() : model;
+        const finalLocation = location === 'Other' ? customLocation.trim() : location;
+
+        if (!finalMake || !finalModel || !finalLocation || !pricePerDay) {
             Alert.alert('Error', 'Please fill in all required fields');
             return;
         }
@@ -81,13 +112,13 @@ export default function EditVehicleScreen({ route, navigation }: any) {
         const { error } = await supabase
             .from('vehicles')
             .update({
-                make,
-                model,
+                make: finalMake,
+                model: finalModel,
                 year: parseInt(year) || null,
                 transmission,
                 fuel_type: fuelType,
                 seating_capacity: parseInt(seatingCapacity) || null,
-                location,
+                location: finalLocation,
                 price_per_day: parseFloat(pricePerDay),
                 description,
             })
@@ -171,15 +202,52 @@ export default function EditVehicleScreen({ route, navigation }: any) {
             </View>
 
             {/* Form Fields */}
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Make *</Text>
-                <TextInput style={styles.input} value={make} onChangeText={setMake} placeholder="e.g., Toyota" />
-            </View>
+            <DropdownPicker
+                label="Make *"
+                value={make}
+                options={VEHICLE_MAKES}
+                onSelect={(val) => {
+                    setMake(val);
+                    setModel('');
+                    if (val !== 'Other') setCustomMake('');
+                    if (val !== 'Other') setCustomModel('');
+                }}
+                placeholder="Select vehicle brand"
+            />
+            {make === 'Other' && (
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Custom Brand Name *</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={customMake}
+                        onChangeText={setCustomMake}
+                        placeholder="e.g., Peugeot, Volvo..."
+                    />
+                </View>
+            )}
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Model *</Text>
-                <TextInput style={styles.input} value={model} onChangeText={setModel} placeholder="e.g., Allion" />
-            </View>
+            <DropdownPicker
+                label="Model *"
+                value={model}
+                options={modelOptions}
+                onSelect={(val) => {
+                    setModel(val);
+                    if (val !== 'Other') setCustomModel('');
+                }}
+                placeholder={make ? `Select ${make} model` : 'Select make first'}
+                disabled={!make}
+            />
+            {(model === 'Other' || make === 'Other') && (
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Custom Model Name *</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={customModel}
+                        onChangeText={setCustomModel}
+                        placeholder="e.g., Starlet, GT86..."
+                    />
+                </View>
+            )}
 
             <View style={styles.row}>
                 <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
@@ -216,10 +284,27 @@ export default function EditVehicleScreen({ route, navigation }: any) {
                 </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Location *</Text>
-                <TextInput style={styles.input} value={location} onChangeText={setLocation} placeholder="e.g., Colombo" />
-            </View>
+            <DropdownPicker
+                label="Location (District) *"
+                value={location}
+                options={SRI_LANKA_DISTRICTS}
+                onSelect={(val) => {
+                    setLocation(val);
+                    if (val !== 'Other') setCustomLocation('');
+                }}
+                placeholder="Select Sri Lanka district"
+            />
+            {location === 'Other' && (
+                <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Custom Location / Town *</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={customLocation}
+                        onChangeText={setCustomLocation}
+                        placeholder="Enter location name..."
+                    />
+                </View>
+            )}
 
             <View style={styles.inputContainer}>
                 <Text style={styles.label}>Price per Day (LKR) *</Text>
