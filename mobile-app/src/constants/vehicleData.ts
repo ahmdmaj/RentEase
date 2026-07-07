@@ -87,3 +87,41 @@ export const SRI_LANKA_DISTRICTS = [
     'Ratnapura',
     'Kegalle',
 ];
+
+export const getAvailabilityLabel = (bookings?: any[]) => {
+    if (!bookings || !Array.isArray(bookings)) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Find approved bookings where end_date is today or in the future
+    const activeBookings = bookings.filter(
+        (b) => b.status === 'approved' && b.end_date >= todayStr
+    );
+
+    if (activeBookings.length === 0) return null;
+
+    // Sort to find the latest end_date among active approved bookings
+    activeBookings.sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime());
+    const latestBooking = activeBookings[0];
+
+    // Available from end_date + 1 day
+    const endDate = new Date(latestBooking.end_date);
+    const availableDate = new Date(endDate);
+    availableDate.setDate(availableDate.getDate() + 1);
+
+    const diffDays = Math.ceil((availableDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+        return 'Available from Tomorrow';
+    } else if (diffDays === 0) {
+        return 'Available Today';
+    } else if (diffDays <= 7 && diffDays > 1) {
+        const dayName = availableDate.toLocaleDateString('en-US', { weekday: 'long' });
+        return `Available from ${dayName}`;
+    } else {
+        const dateFormatted = availableDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return `Available from ${dateFormatted}`;
+    }
+};

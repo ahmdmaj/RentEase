@@ -9,11 +9,13 @@ import {
     Alert,
     RefreshControl,
     Animated,
+    Image,
 } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getAvailabilityLabel } from '../constants/vehicleData';
 
 export default function MyListingsScreen({ navigation }: any) {
     const { user } = useAuthStore();
@@ -37,7 +39,7 @@ export default function MyListingsScreen({ navigation }: any) {
 
         const vehiclesRes = await supabase
             .from('vehicles')
-            .select('*')
+            .select('*, bookings(start_date, end_date, status), vehicle_images(image_url, display_order)')
             .eq('owner_id', user.id)
             .order('created_at', { ascending: false });
 
@@ -203,25 +205,59 @@ export default function MyListingsScreen({ navigation }: any) {
                 data={vehicles}
                 keyExtractor={(item) => item.id}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                renderItem={({ item }) => (
+                renderItem={({ item }) => {
+                    const availabilityLabel = getAvailabilityLabel(item.bookings);
+                    const firstImage = item.vehicle_images && item.vehicle_images.length > 0 
+                        ? [...item.vehicle_images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0))[0]?.image_url 
+                        : null;
+                    return (
                     <TouchableOpacity
                         style={styles.card}
                         onPress={() => navigation.navigate('EditVehicle', { vehicleId: item.id })}
                     >
-                        <View style={styles.cardContent}>
-                            <View style={styles.cardHeader}>
-                                <Text style={styles.cardTitle}>{item.make} {item.model}</Text>
-                                <View style={[styles.statusBadge, { backgroundColor: item.is_available ? '#dcfce7' : '#fef9c3' }]}>
-                                    <Text style={[styles.statusText, { color: item.is_available ? '#16a34a' : '#ca8a04' }]}>
-                                        {item.is_available ? '✅ Approved & Listed' : '⏳ Under Admin Check'}
-                                    </Text>
+                        <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+                            {/* Thumbnail Image */}
+                            {firstImage ? (
+                                <Image
+                                    source={{ uri: firstImage }}
+                                    style={styles.cardThumbnail}
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <View style={styles.cardThumbnailPlaceholder}>
+                                    <Ionicons name="car-sport" size={32} color="#cbd5e1" />
                                 </View>
+                            )}
+
+                            {/* Text Content */}
+                            <View style={[styles.cardContent, { flex: 1 }]}>
+                                <View style={styles.cardHeader}>
+                                    <Text style={[styles.cardTitle, { flexShrink: 1 }]} numberOfLines={1}>{item.make} {item.model}</Text>
+                                    <View style={[styles.statusBadge, { backgroundColor: item.is_available ? '#dcfce7' : '#fef9c3' }]}>
+                                        <Text style={[styles.statusText, { color: item.is_available ? '#16a34a' : '#ca8a04' }]}>
+                                            {item.is_available ? '✅ Listed' : '⏳ Under Check'}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                                    <Text style={styles.cardSubtitle}>📍 {item.location}</Text>
+                                    {availabilityLabel ? (
+                                        <View style={styles.bookedBadge}>
+                                            <Ionicons name="time-outline" size={11} color="#b45309" />
+                                            <Text style={styles.bookedBadgeText}>{availabilityLabel}</Text>
+                                        </View>
+                                    ) : (
+                                        <View style={styles.availableBadge}>
+                                            <Text style={styles.availableBadgeText}>🟢 Available</Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <Text style={styles.cardPrice}>LKR {item.price_per_day} / day</Text>
                             </View>
-                            <Text style={styles.cardSubtitle}>📍 {item.location}</Text>
-                            <Text style={styles.cardPrice}>LKR {item.price_per_day} / day</Text>
                         </View>
                     </TouchableOpacity>
-                )}
+                    );
+                }}
                 contentContainerStyle={{ paddingBottom: 120 }}
                 ListEmptyComponent={() => (
                     <View style={styles.empty}>
@@ -366,6 +402,47 @@ const styles = StyleSheet.create({
     statusText: { fontSize: 12, fontWeight: '500' },
     cardSubtitle: { fontSize: 14, color: '#64748b' },
     cardPrice: { fontSize: 16, fontWeight: '700', color: '#16a34a', marginTop: 4 },
+    cardThumbnail: {
+        width: 85,
+        height: 80,
+        borderRadius: 10,
+        backgroundColor: '#f1f5f9',
+    },
+    cardThumbnailPlaceholder: {
+        width: 85,
+        height: 80,
+        borderRadius: 10,
+        backgroundColor: '#f1f5f9',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bookedBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fef3c7',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 10,
+        gap: 4,
+        borderWidth: 1,
+        borderColor: '#fde68a',
+    },
+    bookedBadgeText: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#b45309',
+    },
+    availableBadge: {
+        backgroundColor: '#dcfce7',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 10,
+    },
+    availableBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: '#16a34a',
+    },
 
     // Empty
     empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60, gap: 12 },

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { supabase } from '../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import { getAvailabilityLabel } from '../constants/vehicleData';
 
 const { width } = Dimensions.get('window');
 
@@ -30,10 +31,10 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
         try {
             setLoading(true);
 
-            // Fetch vehicle details with owner profile
+            // Fetch vehicle details with owner profile and bookings
             const { data: vehicleData, error: vehicleError } = await supabase
                 .from('vehicles')
-                .select('*, profiles(full_name, phone, avatar_url)')
+                .select('*, profiles(full_name, phone, avatar_url), bookings(start_date, end_date, status)')
                 .eq('id', vehicleId)
                 .single();
 
@@ -122,9 +123,27 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
 
             {/* Vehicle Info */}
             <View style={styles.content}>
-                <Text style={styles.title}>
-                    {vehicle.make} {vehicle.model}
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <Text style={[styles.title, { marginBottom: 0, flex: 1 }]}>
+                        {vehicle.make} {vehicle.model}
+                    </Text>
+                </View>
+                {(() => {
+                    const availabilityLabel = getAvailabilityLabel(vehicle.bookings);
+                    if (availabilityLabel) {
+                        return (
+                            <View style={[styles.bookedBadge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
+                                <Ionicons name="time-outline" size={14} color="#b45309" />
+                                <Text style={[styles.bookedBadgeText, { fontSize: 13 }]}>⏳ {availabilityLabel}</Text>
+                            </View>
+                        );
+                    }
+                    return (
+                        <View style={[styles.availableBadge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
+                            <Text style={[styles.availableBadgeText, { fontSize: 13 }]}>🟢 Available Now for Booking</Text>
+                        </View>
+                    );
+                })()}
 
                 <View style={styles.priceContainer}>
                     <Text style={styles.price}>LKR {vehicle.price_per_day}</Text>
@@ -299,6 +318,33 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#64748b',
         marginLeft: 4,
+    },
+    bookedBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fef3c7',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+        gap: 6,
+        borderWidth: 1,
+        borderColor: '#fde68a',
+    },
+    bookedBadgeText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#b45309',
+    },
+    availableBadge: {
+        backgroundColor: '#dcfce7',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+    },
+    availableBadgeText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#16a34a',
     },
     divider: {
         height: 1,

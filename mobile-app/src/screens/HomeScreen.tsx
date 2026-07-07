@@ -13,11 +13,13 @@ import {
   Animated,
   Dimensions,
   TouchableWithoutFeedback,
+  Image,
 } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getAvailabilityLabel } from '../constants/vehicleData';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.75;
@@ -68,7 +70,7 @@ export default function HomeScreen({ navigation }: any) {
   const fetchVehicles = async () => {
     const { data, error } = await supabase
       .from('vehicles')
-      .select('*, profiles(full_name)')
+      .select('*, profiles(full_name), bookings(start_date, end_date, status), vehicle_images(image_url, display_order)')
       .eq('is_available', true)
       .order('created_at', { ascending: false });
 
@@ -266,21 +268,55 @@ export default function HomeScreen({ navigation }: any) {
       <FlatList
         data={filteredVehicles}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => {
+          const availabilityLabel = getAvailabilityLabel(item.bookings);
+          const firstImage = item.vehicle_images && item.vehicle_images.length > 0 
+            ? [...item.vehicle_images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0))[0]?.image_url 
+            : null;
+          return (
           <TouchableOpacity
             style={styles.card}
             onPress={() => navigation.navigate('VehicleDetail', { vehicleId: item.id })}
           >
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>{item.make} {item.model}</Text>
-              <Text style={styles.cardSubtitle}>📍 {item.location}</Text>
-              <Text style={styles.cardPrice}>LKR {item.price_per_day} / day</Text>
-              {item.profiles && (
-                <Text style={styles.cardOwner}>👤 {item.profiles.full_name || 'Owner'}</Text>
+            <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+              {/* Thumbnail Image */}
+              {firstImage ? (
+                <Image
+                  source={{ uri: firstImage }}
+                  style={styles.cardThumbnail}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.cardThumbnailPlaceholder}>
+                  <Ionicons name="car-sport" size={32} color="#cbd5e1" />
+                </View>
               )}
+
+              {/* Text Content */}
+              <View style={[styles.cardContent, { flex: 1 }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                  <Text style={[styles.cardTitle, { flexShrink: 1 }]} numberOfLines={1}>{item.make} {item.model}</Text>
+                  {availabilityLabel ? (
+                    <View style={styles.bookedBadge}>
+                      <Ionicons name="time-outline" size={11} color="#b45309" />
+                      <Text style={styles.bookedBadgeText}>{availabilityLabel}</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.availableBadge}>
+                      <Text style={styles.availableBadgeText}>🟢 Available</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.cardSubtitle}>📍 {item.location}</Text>
+                <Text style={styles.cardPrice}>LKR {item.price_per_day} / day</Text>
+                {item.profiles && (
+                  <Text style={styles.cardOwner}>👤 {item.profiles.full_name || 'Owner'}</Text>
+                )}
+              </View>
             </View>
           </TouchableOpacity>
-        )}
+          );
+        }}
         ListEmptyComponent={() => (
           <View style={styles.empty}>
             <Text style={styles.emptyText}>No vehicles match your search.</Text>
@@ -596,6 +632,47 @@ const styles = StyleSheet.create({
   cardSubtitle: { fontSize: 14, color: '#64748b' },
   cardPrice: { fontSize: 16, fontWeight: '700', color: '#16a34a', marginTop: 4 },
   cardOwner: { fontSize: 12, color: '#94a3b8', marginTop: 4 },
+  cardThumbnail: {
+    width: 90,
+    height: 85,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+  },
+  cardThumbnailPlaceholder: {
+    width: 90,
+    height: 85,
+    borderRadius: 10,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bookedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#fde68a',
+  },
+  bookedBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#b45309',
+  },
+  availableBadge: {
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  availableBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#16a34a',
+  },
 
   // Empty State
   empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
