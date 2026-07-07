@@ -61,20 +61,28 @@ export default function OwnerApprovals() {
         setActionLoading(applicationId);
 
         try {
-            const { error: appError } = await supabase
+            const { data: appData, error: appError } = await supabase
                 .from('owner_applications')
                 .update({ status: approve ? 'approved' : 'rejected' })
-                .eq('id', applicationId);
+                .eq('id', applicationId)
+                .select();
 
             if (appError) throw appError;
+            if (!appData || appData.length === 0) {
+                throw new Error('Update blocked by Supabase RLS! Please run migration 002_admin_rls_policies.sql in your Supabase SQL Editor.');
+            }
 
             if (approve) {
-                const { error: profileError } = await supabase
+                const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
                     .update({ role: 'owner' })
-                    .eq('id', profileId);
+                    .eq('id', profileId)
+                    .select();
 
                 if (profileError) throw profileError;
+                if (!profileData || profileData.length === 0) {
+                    throw new Error('Profile role update blocked by Supabase RLS! Please run migration 002_admin_rls_policies.sql in your Supabase SQL Editor.');
+                }
             }
 
             alert(`Application ${approve ? 'approved' : 'rejected'} successfully!`);

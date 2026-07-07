@@ -60,11 +60,15 @@ export default function Vehicles() {
         if (!window.confirm(`Are you sure you want to ${action} this vehicle on the platform?`)) return;
         setActionLoading(vehicleId);
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('vehicles')
                 .update({ is_available: !current })
-                .eq('id', vehicleId);
+                .eq('id', vehicleId)
+                .select();
             if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error('Update blocked by Supabase RLS! Please run migration 002_admin_rls_policies.sql in your Supabase SQL Editor.');
+            }
             await fetchVehicles();
         } catch (err: any) {
             alert('Error: ' + err.message);
@@ -77,11 +81,15 @@ export default function Vehicles() {
         if (!window.confirm(`Are you sure you want to delete "${make} ${model}"? This cannot be undone.`)) return;
         setActionLoading(vehicleId);
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('vehicles')
                 .delete()
-                .eq('id', vehicleId);
+                .eq('id', vehicleId)
+                .select();
             if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error('Delete blocked by Supabase RLS! Please run migration 002_admin_rls_policies.sql in your Supabase SQL Editor.');
+            }
             setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
         } catch (err: any) {
             alert('Error: ' + err.message);
