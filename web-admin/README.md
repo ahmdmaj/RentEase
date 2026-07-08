@@ -154,7 +154,7 @@ Viewed readme.md:1-96
 
 #### **Owner Experience (Fleet & Request Management)**
 * **`MyListingsScreen.tsx` (`MyListings`):**
-  * Dashboard for verified vehicle owners to oversee all vehicles currently listed under their profile. contribution.
+  * Dashboard for verified vehicle owners to oversee all vehicles currently listed under their profile.
   * Quick status indicators and navigation to edit or add new inventory.
 * **`AddVehicleScreen.tsx` (`AddVehicle`) & `DropdownPicker.tsx`:**
   * Comprehensive multi-step vehicle listing form.
