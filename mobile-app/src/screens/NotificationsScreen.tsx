@@ -18,10 +18,66 @@ interface NotificationItem {
   title: string;
   message: string;
   time: string;
-  type: 'booking' | 'system' | 'promo';
+  type: string;
   read: boolean;
   targetScreen?: string;
+  data?: any;
 }
+
+const getIconInfo = (type: string) => {
+  switch (type) {
+    // Renter
+    case 'renter_booking_approved':
+      return { name: 'checkmark-circle-outline', color: '#16a34a', bg: '#dcfce7' }; // Green
+    case 'renter_booking_rejected':
+      return { name: 'close-circle-outline', color: '#dc2626', bg: '#fee2e2' }; // Red
+    case 'renter_rental_starts':
+      return { name: 'car-sport-outline', color: '#2563eb', bg: '#dbeafe' }; // Blue
+    case 'renter_leave_review':
+      return { name: 'star-outline', color: '#d97706', bg: '#fef3c7' }; // Amber
+    // Owner
+    case 'owner_booking_request':
+      return { name: 'cart-outline', color: '#2563eb', bg: '#dbeafe' };
+    case 'owner_vehicle_approved':
+      return { name: 'thumbs-up-outline', color: '#16a34a', bg: '#dcfce7' };
+    case 'owner_booking_completed':
+      return { name: 'flag-outline', color: '#0891b2', bg: '#cffafe' }; // Cyan
+    case 'owner_booking_cancelled':
+      return { name: 'trash-outline', color: '#dc2626', bg: '#fee2e2' };
+    // Admin
+    case 'admin_new_vehicle':
+      return { name: 'car-outline', color: '#7c3aed', bg: '#ede9fe' }; // Purple
+    // System
+    case 'system_welcome':
+      return { name: 'gift-outline', color: '#ec4899', bg: '#fce7f3' }; // Pink
+    case 'system_email_changed':
+      return { name: 'mail-outline', color: '#64748b', bg: '#f1f5f9' }; // Slate
+    case 'system_password_reset':
+      return { name: 'key-outline', color: '#f59e0b', bg: '#fef3c7' };
+    default:
+      return { name: 'notifications-outline', color: '#64748b', bg: '#f1f5f9' };
+  }
+};
+
+const getTargetScreenForType = (type: string): string | undefined => {
+  switch (type) {
+    case 'owner_booking_request':
+    case 'owner_booking_cancelled':
+    case 'owner_booking_completed':
+      return 'OwnerBookings';
+    case 'renter_booking_approved':
+    case 'renter_booking_rejected':
+    case 'renter_rental_starts':
+    case 'renter_leave_review':
+      return 'MyBookings';
+    case 'owner_vehicle_approved':
+      return 'MyListings';
+    case 'admin_new_vehicle':
+      return 'AdminDashboard';
+    default:
+      return undefined;
+  }
+};
 
 const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
@@ -29,7 +85,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Welcome to RentEase! 🚗',
     message: 'Explore top-rated vehicles or list your own car to start earning today.',
     time: 'Just now',
-    type: 'system',
+    type: 'system_welcome',
     read: false,
   },
   {
@@ -37,7 +93,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Instant Booking Available',
     message: 'Look for the green available tag to book cars instantly near your location.',
     time: '2 hours ago',
-    type: 'promo',
+    type: 'system_welcome',
     read: false,
   },
   {
@@ -45,7 +101,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Listing Tip 💡',
     message: 'Add clear, well-lit photos of your car to get up to 3x more bookings.',
     time: '1 day ago',
-    type: 'system',
+    type: 'system_welcome',
     read: true,
   },
 ];
@@ -75,72 +131,35 @@ export default function NotificationsScreen({ navigation }: any) {
     }
 
     try {
-      const dynamicList: NotificationItem[] = [];
-
-      // 1. Fetch pending bookings for vehicles owned by this user (if owner)
-      const { data: ownerBookings } = await supabase
-        .from('bookings')
-        .select(`
-          id,
-          total_price,
-          status,
-          created_at,
-          vehicles!inner ( make, model, owner_id ),
-          profiles ( full_name )
-        `)
-        .eq('vehicles.owner_id', user.id)
-        .eq('status', 'pending')
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (ownerBookings && ownerBookings.length > 0) {
-        ownerBookings.forEach((b: any) => {
-          dynamicList.push({
-            id: `owner-${b.id}`,
-            title: '🚗 New Booking Request!',
-            message: `${b.profiles?.full_name || 'A renter'} requested to book your ${b.vehicles?.make} ${b.vehicles?.model} for LKR ${b.total_price}. Tap to review and Accept or Reject!`,
-            time: formatTimeAgo(b.created_at),
-            type: 'booking',
-            read: false,
-            targetScreen: 'OwnerBookings',
-          });
-        });
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        return;
       }
 
-      // 2. Fetch approved/rejected bookings for this renter
-      const { data: renterBookings } = await supabase
-        .from('bookings')
-        .select(`
-          id,
-          total_price,
-          status,
-          created_at,
-          vehicles ( make, model )
-        `)
-        .eq('renter_id', user.id)
-        .in('status', ['approved', 'rejected'])
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (renterBookings && renterBookings.length > 0) {
-        renterBookings.forEach((b: any) => {
-          const isApproved = b.status === 'approved';
-          dynamicList.push({
-            id: `renter-${b.id}`,
-            title: isApproved ? '✅ Booking Approved!' : '❌ Booking Rejected',
-            message: `Your booking request for ${b.vehicles?.make} ${b.vehicles?.model} was ${b.status} by the vehicle owner.`,
-            time: formatTimeAgo(b.created_at),
-            type: 'booking',
-            read: false,
-            targetScreen: 'MyBookings',
-          });
-        });
+      if (data && data.length > 0) {
+        const mappedList: NotificationItem[] = data.map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          message: n.body,
+          time: formatTimeAgo(n.created_at),
+          type: n.type,
+          read: n.is_read,
+          data: n.data,
+          targetScreen: getTargetScreenForType(n.type),
+        }));
+        setNotifications(mappedList);
+      } else {
+        setNotifications([]);
       }
-
-      // Combine with system tips
-      setNotifications([...dynamicList, ...INITIAL_NOTIFICATIONS]);
     } catch (err) {
       console.error('Error loading notifications:', err);
-      setNotifications(INITIAL_NOTIFICATIONS);
+      setNotifications([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -156,18 +175,18 @@ export default function NotificationsScreen({ navigation }: any) {
     fetchNotifications();
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications(notifications.map(item => ({ ...item, read: true })));
-  };
-
-  const getIconForType = (type: string) => {
-    switch (type) {
-      case 'booking':
-        return { name: 'calendar', color: '#2563eb', bg: '#dbeafe' };
-      case 'promo':
-        return { name: 'pricetag', color: '#16a34a', bg: '#dcfce7' };
-      default:
-        return { name: 'information-circle', color: '#f59e0b', bg: '#fef3c7' };
+    if (user) {
+      try {
+        await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('user_id', user.id)
+          .eq('is_read', false);
+      } catch (err) {
+        console.error('Error marking all read:', err);
+      }
     }
   };
 
@@ -199,14 +218,24 @@ export default function NotificationsScreen({ navigation }: any) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => {
-          const iconInfo = getIconForType(item.type);
+          const iconInfo = getIconInfo(item.type);
           return (
             <TouchableOpacity
               style={[styles.card, !item.read && styles.unreadCard]}
-              onPress={() => {
+              onPress={async () => {
                 setNotifications(
                   notifications.map(n => (n.id === item.id ? { ...n, read: true } : n))
                 );
+                if (!item.read && user) {
+                  try {
+                    await supabase
+                      .from('notifications')
+                      .update({ is_read: true })
+                      .eq('id', item.id);
+                  } catch (err) {
+                    console.error('Error marking notification read:', err);
+                  }
+                }
                 if (item.targetScreen) {
                   navigation.navigate(item.targetScreen);
                 }
@@ -238,6 +267,7 @@ export default function NotificationsScreen({ navigation }: any) {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
