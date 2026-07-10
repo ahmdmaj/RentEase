@@ -53,7 +53,7 @@ export default function AddVehicleScreen({ navigation }: any) {
 
         // Launch image picker (allow multiple selection)
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: 'images',
             allowsMultipleSelection: true,
             quality: 0.7, // Compress to save space
             selectionLimit: 5,
@@ -95,7 +95,7 @@ export default function AddVehicleScreen({ navigation }: any) {
                     uri,
                     {
                         httpMethod: 'POST',
-                        uploadType: 0, // 0 = BINARY_CONTENT
+                        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
                         headers: {
                             Authorization: `Bearer ${token}`,
                             apikey: anonKey || '',

@@ -13,11 +13,13 @@ import {
 import { supabase } from '../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { getAvailabilityLabel } from '../constants/vehicleData';
+import { useAuthStore } from '../store/authStore';
 
 const { width } = Dimensions.get('window');
 
 export default function VehicleDetailScreen({ route, navigation }: any) {
     const { vehicleId } = route.params;
+    const { user } = useAuthStore();
     const [vehicle, setVehicle] = useState<any>(null);
     const [images, setImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -461,18 +463,19 @@ const styles = StyleSheet.create({
     bottomSpacer: {
         height: 40,
     },
-}); chatButton: {
-    flexDirection: 'row',
+    chatButton: {
+        flexDirection: 'row',
         backgroundColor: '#8b5cf6',
-            borderRadius: 12,
-                paddingVertical: 14,
-                    alignItems: 'center',
-                        justifyContent: 'center',
-                            gap: 8,
-                                marginTop: 8,
-},
-chatButtonText: {
-    color: '#fff',
+        borderRadius: 12,
+        paddingVertical: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        marginTop: 8,
+    },
+    chatButtonText: {
+        color: '#fff',
         fontSize: 16,
-            fontWeight: '600',
-},
+        fontWeight: '600',
+    },
+});
