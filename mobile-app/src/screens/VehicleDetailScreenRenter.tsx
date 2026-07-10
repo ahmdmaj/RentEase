@@ -90,134 +90,150 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
             </View>
 
             <ScrollView style={styles.scrollContainer} bounces={false}>
-            {/* Image Carousel */}
-            <View style={styles.imageContainer}>
-                {images.length > 0 ? (
-                    <>
-                        <ScrollView
-                            horizontal
-                            pagingEnabled
-                            showsHorizontalScrollIndicator={false}
-                            onMomentumScrollEnd={(e) => {
-                                const index = Math.round(e.nativeEvent.contentOffset.x / width);
-                                setCurrentImageIndex(index);
-                            }}
-                        >
-                            {images.map((url, index) => (
-                                <Image key={index} source={{ uri: url }} style={styles.image} resizeMode="cover" />
-                            ))}
-                        </ScrollView>
-                        {/* Image Counter */}
-                        <View style={styles.imageCounter}>
-                            <Text style={styles.imageCounterText}>
-                                {currentImageIndex + 1} / {images.length}
-                            </Text>
+                {/* Image Carousel */}
+                <View style={styles.imageContainer}>
+                    {images.length > 0 ? (
+                        <>
+                            <ScrollView
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                onMomentumScrollEnd={(e) => {
+                                    const index = Math.round(e.nativeEvent.contentOffset.x / width);
+                                    setCurrentImageIndex(index);
+                                }}
+                            >
+                                {images.map((url, index) => (
+                                    <Image key={index} source={{ uri: url }} style={styles.image} resizeMode="cover" />
+                                ))}
+                            </ScrollView>
+                            {/* Image Counter */}
+                            <View style={styles.imageCounter}>
+                                <Text style={styles.imageCounterText}>
+                                    {currentImageIndex + 1} / {images.length}
+                                </Text>
+                            </View>
+                        </>
+                    ) : (
+                        <View style={styles.noImageContainer}>
+                            <Text style={styles.noImageText}>No images available</Text>
                         </View>
-                    </>
-                ) : (
-                    <View style={styles.noImageContainer}>
-                        <Text style={styles.noImageText}>No images available</Text>
-                    </View>
-                )}
-            </View>
-
-            {/* Vehicle Info */}
-            <View style={styles.content}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <Text style={[styles.title, { marginBottom: 0, flex: 1 }]}>
-                        {vehicle.make} {vehicle.model}
-                    </Text>
+                    )}
                 </View>
-                {(() => {
-                    const availabilityLabel = getAvailabilityLabel(vehicle.bookings);
-                    if (availabilityLabel) {
+
+                {/* Vehicle Info */}
+                <View style={styles.content}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <Text style={[styles.title, { marginBottom: 0, flex: 1 }]}>
+                            {vehicle.make} {vehicle.model}
+                        </Text>
+                    </View>
+                    {(() => {
+                        const availabilityLabel = getAvailabilityLabel(vehicle.bookings);
+                        if (availabilityLabel) {
+                            return (
+                                <View style={[styles.bookedBadge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
+                                    <Ionicons name="time-outline" size={14} color="#b45309" />
+                                    <Text style={[styles.bookedBadgeText, { fontSize: 13 }]}>⏳ {availabilityLabel}</Text>
+                                </View>
+                            );
+                        }
                         return (
-                            <View style={[styles.bookedBadge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
-                                <Ionicons name="time-outline" size={14} color="#b45309" />
-                                <Text style={[styles.bookedBadgeText, { fontSize: 13 }]}>⏳ {availabilityLabel}</Text>
+                            <View style={[styles.availableBadge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
+                                <Text style={[styles.availableBadgeText, { fontSize: 13 }]}>🟢 Available Now for Booking</Text>
                             </View>
                         );
-                    }
-                    return (
-                        <View style={[styles.availableBadge, { alignSelf: 'flex-start', marginBottom: 12 }]}>
-                            <Text style={[styles.availableBadgeText, { fontSize: 13 }]}>🟢 Available Now for Booking</Text>
+                    })()}
+
+                    <View style={styles.priceContainer}>
+                        <Text style={styles.price}>LKR {vehicle.price_per_day}</Text>
+                        <Text style={styles.priceUnit}>/ day</Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Specs Grid */}
+                    <View style={styles.specsGrid}>
+                        <View style={styles.specItem}>
+                            <Text style={styles.specLabel}>Year</Text>
+                            <Text style={styles.specValue}>{vehicle.year || 'N/A'}</Text>
                         </View>
-                    );
-                })()}
-
-                <View style={styles.priceContainer}>
-                    <Text style={styles.price}>LKR {vehicle.price_per_day}</Text>
-                    <Text style={styles.priceUnit}>/ day</Text>
-                </View>
-
-                <View style={styles.divider} />
-
-                {/* Specs Grid */}
-                <View style={styles.specsGrid}>
-                    <View style={styles.specItem}>
-                        <Text style={styles.specLabel}>Year</Text>
-                        <Text style={styles.specValue}>{vehicle.year || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.specItem}>
-                        <Text style={styles.specLabel}>Transmission</Text>
-                        <Text style={styles.specValue}>{vehicle.transmission || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.specItem}>
-                        <Text style={styles.specLabel}>Fuel</Text>
-                        <Text style={styles.specValue}>{vehicle.fuel_type || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.specItem}>
-                        <Text style={styles.specLabel}>Seats</Text>
-                        <Text style={styles.specValue}>{vehicle.seating_capacity || 'N/A'}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.divider} />
-
-                {/* Location */}
-                <View style={styles.locationContainer}>
-                    <Text style={styles.sectionLabel}>📍 Location</Text>
-                    <Text style={styles.locationText}>{vehicle.location}</Text>
-                </View>
-
-                {/* Description */}
-                {vehicle.description && (
-                    <View style={styles.descriptionContainer}>
-                        <Text style={styles.sectionLabel}>📝 Description</Text>
-                        <Text style={styles.descriptionText}>{vehicle.description}</Text>
-                    </View>
-                )}
-
-                <View style={styles.divider} />
-
-                {/* Owner Info */}
-                <View style={styles.ownerContainer}>
-                    <Text style={styles.sectionLabel}>👤 Owner</Text>
-                    <View style={styles.ownerDetails}>
-                        <View style={styles.ownerAvatar}>
-                            <Text style={styles.ownerAvatarText}>
-                                {ownerName.charAt(0).toUpperCase()}
-                            </Text>
+                        <View style={styles.specItem}>
+                            <Text style={styles.specLabel}>Transmission</Text>
+                            <Text style={styles.specValue}>{vehicle.transmission || 'N/A'}</Text>
                         </View>
-                        <View style={styles.ownerInfo}>
-                            <Text style={styles.ownerName}>{ownerName}</Text>
-                            <Text style={styles.ownerPhone}>📞 {ownerPhone}</Text>
+                        <View style={styles.specItem}>
+                            <Text style={styles.specLabel}>Fuel</Text>
+                            <Text style={styles.specValue}>{vehicle.fuel_type || 'N/A'}</Text>
+                        </View>
+                        <View style={styles.specItem}>
+                            <Text style={styles.specLabel}>Seats</Text>
+                            <Text style={styles.specValue}>{vehicle.seating_capacity || 'N/A'}</Text>
                         </View>
                     </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Location */}
+                    <View style={styles.locationContainer}>
+                        <Text style={styles.sectionLabel}>📍 Location</Text>
+                        <Text style={styles.locationText}>{vehicle.location}</Text>
+                    </View>
+
+                    {/* Description */}
+                    {vehicle.description && (
+                        <View style={styles.descriptionContainer}>
+                            <Text style={styles.sectionLabel}>📝 Description</Text>
+                            <Text style={styles.descriptionText}>{vehicle.description}</Text>
+                        </View>
+                    )}
+
+                    <View style={styles.divider} />
+
+                    {/* Owner Info */}
+                    <View style={styles.ownerContainer}>
+                        <Text style={styles.sectionLabel}>👤 Owner</Text>
+                        <View style={styles.ownerDetails}>
+                            <View style={styles.ownerAvatar}>
+                                <Text style={styles.ownerAvatarText}>
+                                    {ownerName.charAt(0).toUpperCase()}
+                                </Text>
+                            </View>
+                            <View style={styles.ownerInfo}>
+                                <Text style={styles.ownerName}>{ownerName}</Text>
+                                <Text style={styles.ownerPhone}>📞 {ownerPhone}</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* 💬 Chat with Owner Button */}
+                    {user?.id !== vehicle.owner_id && (
+                        <TouchableOpacity
+                            style={styles.chatButton}
+                            onPress={() => navigation.navigate('Chat', {
+                                vehicleId: vehicle.id,
+                                ownerId: vehicle.owner_id,
+                                renterId: user?.id,
+                                vehicleName: `${vehicle.make} ${vehicle.model}`,
+                            })}
+                        >
+                            <Ionicons name="chatbubble-outline" size={24} color="#fff" />
+                            <Text style={styles.chatButtonText}>💬 Chat with Owner</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Book Button */}
+                    <TouchableOpacity
+                        style={styles.bookButton}
+                        onPress={() => navigation.navigate('Booking', { vehicle: vehicle })}
+                    >
+                        <Text style={styles.bookButtonText}>📅 Book This Vehicle</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.bottomSpacer} />
                 </View>
-
-                <View style={styles.divider} />
-
-                {/* Book Button */}
-                <TouchableOpacity
-                    style={styles.bookButton}
-                    onPress={() => navigation.navigate('Booking', { vehicle: vehicle })}
-                >
-                    <Text style={styles.bookButtonText}>📅 Book This Vehicle</Text>
-                </TouchableOpacity>
-
-                <View style={styles.bottomSpacer} />
-            </View>
             </ScrollView>
         </View>
     );
@@ -445,4 +461,18 @@ const styles = StyleSheet.create({
     bottomSpacer: {
         height: 40,
     },
-});
+}); chatButton: {
+    flexDirection: 'row',
+        backgroundColor: '#8b5cf6',
+            borderRadius: 12,
+                paddingVertical: 14,
+                    alignItems: 'center',
+                        justifyContent: 'center',
+                            gap: 8,
+                                marginTop: 8,
+},
+chatButtonText: {
+    color: '#fff',
+        fontSize: 16,
+            fontWeight: '600',
+},

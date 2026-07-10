@@ -18,6 +18,7 @@ import OwnerBookingsScreen from '../screens/OwnerBookingsScreen';
 import MyBookingsScreen from '../screens/MyBookingsScreen';
 import EditVehicleScreen from '../screens/EditVehicleScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import ChatScreen from '../screens/ChatScreen';
 
 import { useAuthStore } from '../store/authStore';
 
@@ -52,6 +53,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
                         <Stack.Screen name="EditVehicle" component={EditVehicleScreen} />
                         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+                        <Stack.Screen name="Chat" component={ChatScreen} />
                     </>
                 ) : (
                     <>

@@ -39,12 +39,19 @@ export default function ChatScreen({ route, navigation }: any) {
         const setupConversation = async () => {
             if (!user) return;
 
+            const renterId = route.params.renterId || (user.id === ownerId ? route.params.renterId : user.id);
+            if (!renterId || !ownerId) {
+                console.error('Missing renterId or ownerId for conversation');
+                setLoading(false);
+                return;
+            }
+
             // Check if conversation exists
             const { data: existing, error: findError } = await supabase
                 .from('conversations')
                 .select('id')
                 .eq('vehicle_id', vehicleId)
-                .eq('renter_id', user.id)
+                .eq('renter_id', renterId)
                 .eq('owner_id', ownerId)
                 .maybeSingle();
 
@@ -65,7 +72,7 @@ export default function ChatScreen({ route, navigation }: any) {
                 .from('conversations')
                 .insert({
                     vehicle_id: vehicleId,
-                    renter_id: user.id,
+                    renter_id: renterId,
                     owner_id: ownerId,
                 })
                 .select('id')
