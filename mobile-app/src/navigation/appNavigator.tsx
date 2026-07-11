@@ -31,10 +31,14 @@ export default function AppNavigator() {
     const { initNotifications, cleanUp } = useNotificationStore();
 
     useEffect(() => {
-        if (session?.user?.id) {
-            initNotifications(session.user.id);
-        } else {
-            cleanUp();
+        try {
+            if (session?.user?.id) {
+                initNotifications(session.user.id);
+            } else {
+                cleanUp();
+            }
+        } catch (err) {
+            console.warn('AppNavigator notification init error:', err);
         }
     }, [session?.user?.id]);
 
