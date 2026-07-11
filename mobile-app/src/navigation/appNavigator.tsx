@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, Text } from 'react-native';
@@ -21,12 +21,22 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import ChatScreen from '../screens/ChatScreen';
 
 import { useAuthStore } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
 
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
     const { session, loading } = useAuthStore();
+    const { initNotifications, cleanUp } = useNotificationStore();
+
+    useEffect(() => {
+        if (session?.user?.id) {
+            initNotifications(session.user.id);
+        } else {
+            cleanUp();
+        }
+    }, [session?.user?.id]);
 
     if (loading) {
         return (

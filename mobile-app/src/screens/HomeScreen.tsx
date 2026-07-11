@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getAvailabilityLabel } from '../constants/vehicleData';
@@ -26,6 +27,7 @@ const DRAWER_WIDTH = SCREEN_WIDTH * 0.75;
 
 export default function HomeScreen({ navigation }: any) {
   const { user, signOut } = useAuthStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [filteredVehicles, setFilteredVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,9 +88,10 @@ export default function HomeScreen({ navigation }: any) {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchVehicles();
+      if (user?.id) fetchUnreadCount(user.id);
     });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, user?.id]);
 
   // Apply Search & Filters
   const applyFilters = () => {
@@ -158,6 +161,13 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={styles.headerTitle}>🚗 RentEase</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.notificationIconBtn}>
           <Ionicons name="notifications-outline" size={28} color="#1e293b" />
+          {unreadCount > 0 && (
+            <View style={styles.badgeContainer}>
+              <Text style={styles.badgeText}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -468,7 +478,26 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#1e293b' },
-  notificationIconBtn: { padding: 4 },
+  notificationIconBtn: { padding: 4, position: 'relative' },
+  badgeContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+  },
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
 
   // Drawer
   drawerOverlay: {

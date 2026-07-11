@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
 
 interface NotificationItem {
   id: string;
@@ -108,6 +109,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 
 export default function NotificationsScreen({ navigation }: any) {
   const { user } = useAuthStore();
+  const { fetchUnreadCount, markAllAsReadStore, decrementUnread } = useNotificationStore();
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -154,6 +156,7 @@ export default function NotificationsScreen({ navigation }: any) {
           targetScreen: getTargetScreenForType(n.type),
         }));
         setNotifications(mappedList);
+        if (user?.id) fetchUnreadCount(user.id);
       } else {
         setNotifications([]);
       }
@@ -178,15 +181,7 @@ export default function NotificationsScreen({ navigation }: any) {
   const markAllAsRead = async () => {
     setNotifications(notifications.map(item => ({ ...item, read: true })));
     if (user) {
-      try {
-        await supabase
-          .from('notifications')
-          .update({ is_read: true })
-          .eq('user_id', user.id)
-          .eq('is_read', false);
-      } catch (err) {
-        console.error('Error marking all read:', err);
-      }
+      await markAllAsReadStore(user.id);
     }
   };
 
@@ -227,6 +222,7 @@ export default function NotificationsScreen({ navigation }: any) {
                   notifications.map(n => (n.id === item.id ? { ...n, read: true } : n))
                 );
                 if (!item.read && user) {
+                  decrementUnread();
                   try {
                     await supabase
                       .from('notifications')
