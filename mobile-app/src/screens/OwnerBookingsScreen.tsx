@@ -49,7 +49,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
             .select(`
         *,
         vehicles!inner ( id, make, model, location, price_per_day, owner_id ),
-        profiles ( full_name, phone )
+        profiles!renter_id ( full_name, phone )
       `)
             .eq('vehicles.owner_id', user.id)
             .order('created_at', { ascending: false });
@@ -72,7 +72,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
         fetchBookings();
     };
 
-    const handleStatusUpdate = async (bookingId: string, newStatus: 'approved' | 'rejected') => {
+    const handleStatusUpdate = async (bookingId: string, vehicleId: string, newStatus: 'approved' | 'rejected') => {
         Alert.alert(
             newStatus === 'approved' ? 'Approve Booking' : 'Reject Booking',
             `Are you sure you want to ${newStatus} this booking request?`,
@@ -82,13 +82,18 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                     text: newStatus === 'approved' ? 'Approve' : 'Reject',
                     style: newStatus === 'approved' ? 'default' : 'destructive',
                     onPress: async () => {
-                        const { error } = await supabase
+                        const { data, error } = await supabase
                             .from('bookings')
                             .update({ status: newStatus })
-                            .eq('id', bookingId);
+                            .eq('id', bookingId)
+                            .eq('vehicle_id', vehicleId)
+                            .select();
 
                         if (error) {
-                            Alert.alert('Error', error.message);
+                            console.error('Booking update error:', JSON.stringify(error));
+                            Alert.alert('Error', error.message || 'Failed to update booking. Check RLS policies.');
+                        } else if (!data || data.length === 0) {
+                            Alert.alert('Error', 'Update failed — you may not have permission to update this booking. Please check Supabase RLS policies.');
                         } else {
                             Alert.alert('Success', `Booking ${newStatus} successfully!`);
                             fetchBookings();
@@ -99,7 +104,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
         );
     };
 
-    const handleCompleteBooking = async (bookingId: string) => {
+    const handleCompleteBooking = async (bookingId: string, vehicleId: string) => {
         Alert.alert(
             'Complete Booking',
             'Has this vehicle been returned and the rental period ended?',
@@ -108,13 +113,18 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                 {
                     text: 'Yes, Complete',
                     onPress: async () => {
-                        const { error } = await supabase
+                        const { data, error } = await supabase
                             .from('bookings')
                             .update({ status: 'completed' })
-                            .eq('id', bookingId);
+                            .eq('id', bookingId)
+                            .eq('vehicle_id', vehicleId)
+                            .select();
 
                         if (error) {
-                            Alert.alert('Error', error.message);
+                            console.error('Complete booking error:', JSON.stringify(error));
+                            Alert.alert('Error', error.message || 'Failed to complete booking.');
+                        } else if (!data || data.length === 0) {
+                            Alert.alert('Error', 'Update failed — RLS may be blocking this. Check Supabase policies.');
                         } else {
                             Alert.alert('Success', 'Booking marked as completed!');
                             fetchBookings();
@@ -284,13 +294,13 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                             <View style={styles.cardActions}>
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.approveButton]}
-                                    onPress={() => handleStatusUpdate(item.id, 'approved')}
+                                    onPress={() => handleStatusUpdate(item.id, item.vehicle_id, 'approved')}
                                 >
                                     <Text style={styles.actionButtonText}>✅ Approve</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.rejectButton]}
-                                    onPress={() => handleStatusUpdate(item.id, 'rejected')}
+                                    onPress={() => handleStatusUpdate(item.id, item.vehicle_id, 'rejected')}
                                 >
                                     <Text style={styles.actionButtonText}>❌ Reject</Text>
                                 </TouchableOpacity>
@@ -301,7 +311,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                             <View style={styles.cardActions}>
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.completeButton]}
-                                    onPress={() => handleCompleteBooking(item.id)}
+                                    onPress={() => handleCompleteBooking(item.id, item.vehicle_id)}
                                 >
                                     <Text style={styles.actionButtonText}>✅ Mark as Completed</Text>
                                 </TouchableOpacity>
