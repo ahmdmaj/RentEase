@@ -39,8 +39,15 @@ export default function ChatScreen({ route, navigation }: any) {
         const setupConversation = async () => {
             if (!user) return;
 
-            const renterId = route.params.renterId || (user.id === ownerId ? route.params.renterId : user.id);
-            if (!renterId || !ownerId) {
+            // Determine renterId:
+            // - If explicitly passed (renter opening chat), use it directly
+            // - If owner opens chat, renterId must be passed from the booking card
+            // - Fallback: if current user is not the owner, they are the renter
+            const resolvedRenterId: string | undefined =
+                route.params.renterId ||
+                (user.id !== ownerId ? user.id : undefined);
+
+            if (!resolvedRenterId || !ownerId) {
                 console.error('Missing renterId or ownerId for conversation');
                 setLoading(false);
                 return;
@@ -51,12 +58,13 @@ export default function ChatScreen({ route, navigation }: any) {
                 .from('conversations')
                 .select('id')
                 .eq('vehicle_id', vehicleId)
-                .eq('renter_id', renterId)
+                .eq('renter_id', resolvedRenterId)
                 .eq('owner_id', ownerId)
                 .maybeSingle();
 
             if (findError) {
                 console.error('Error finding conversation:', findError);
+                setLoading(false);
                 return;
             }
 
@@ -67,25 +75,29 @@ export default function ChatScreen({ route, navigation }: any) {
                 return;
             }
 
-            // Create new conversation
-            const { data: newConv, error: createError } = await supabase
-                .from('conversations')
-                .insert({
-                    vehicle_id: vehicleId,
-                    renter_id: renterId,
-                    owner_id: ownerId,
-                })
-                .select('id')
-                .single();
+            // Only the renter can create a new conversation
+            if (user.id !== ownerId) {
+                const { data: newConv, error: createError } = await supabase
+                    .from('conversations')
+                    .insert({
+                        vehicle_id: vehicleId,
+                        renter_id: resolvedRenterId,
+                        owner_id: ownerId,
+                    })
+                    .select('id')
+                    .single();
 
-            if (createError) {
-                Alert.alert('Error', 'Could not start chat.');
-                console.error(createError);
-                return;
+                if (createError) {
+                    Alert.alert('Error', 'Could not start chat.');
+                    console.error(createError);
+                    setLoading(false);
+                    return;
+                }
+
+                setConversationId(newConv.id);
+                fetchMessages(newConv.id);
             }
 
-            setConversationId(newConv.id);
-            fetchMessages(newConv.id);
             setLoading(false);
         };
 
@@ -146,8 +158,10 @@ export default function ChatScreen({ route, navigation }: any) {
         setInputText('');
         setSending(true);
 
-        // Find receiver (if I am renter, receiver is owner, vice versa)
-        const receiverId = user.id === ownerId ? route.params.renterId : ownerId;
+        // Find receiver (if I am owner, receiver is renter; if I am renter, receiver is owner)
+        const receiverId = user.id === ownerId
+            ? route.params.renterId
+            : ownerId;
 
         // Optimistic insert (show immediately)
         const tempMessage: Message = {

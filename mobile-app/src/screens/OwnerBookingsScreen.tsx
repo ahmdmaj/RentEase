@@ -48,7 +48,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
             .from('bookings')
             .select(`
         *,
-        vehicles!inner ( make, model, location, price_per_day, owner_id ),
+        vehicles!inner ( id, make, model, location, price_per_day, owner_id ),
         profiles ( full_name, phone )
       `)
             .eq('vehicles.owner_id', user.id)
@@ -307,6 +307,22 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                                 </TouchableOpacity>
                             </View>
                         )}
+
+                        {/* Chat Button */}
+                        {(item.status === 'pending' || item.status === 'approved') && (
+                            <TouchableOpacity
+                                style={styles.chatButton}
+                                onPress={() => navigation.navigate('Chat', {
+                                    vehicleId: item.vehicle_id,
+                                    ownerId: user?.id,
+                                    renterId: item.renter_id,
+                                    vehicleName: `${item.vehicles?.make} ${item.vehicles?.model}`,
+                                })}
+                            >
+                                <Ionicons name="chatbubble-outline" size={16} color="#8b5cf6" />
+                                <Text style={styles.chatButtonText}>💬 Chat with Renter</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 )}
                 ListEmptyComponent={() => (
@@ -513,6 +529,23 @@ const styles = StyleSheet.create({
     },
     actionButtonText: {
         color: '#fff',
+        fontWeight: '600',
+        fontSize: 14,
+    },
+    chatButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        marginTop: 10,
+        paddingVertical: 10,
+        backgroundColor: '#f3e8ff',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e9d5ff',
+    },
+    chatButtonText: {
+        color: '#7c3aed',
         fontWeight: '600',
         fontSize: 14,
     },

@@ -223,6 +223,14 @@ export default function HomeScreen({ navigation }: any) {
 
             <TouchableOpacity
               style={styles.drawerMenuItem}
+              onPress={() => { closeDrawer(); navigation.navigate('Messages'); }}
+            >
+              <Ionicons name="chatbubbles-outline" size={22} color="#8b5cf6" />
+              <Text style={styles.drawerMenuText}>Messages</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.drawerMenuItem}
               onPress={() => { closeDrawer(); navigation.navigate('OwnerBookings'); }}
             >
               <Ionicons name="clipboard-outline" size={22} color="#2563eb" />

@@ -27,6 +27,7 @@ type Booking = {
         location: string;
         price_per_day: number;
         is_available: boolean;
+        owner_id: string;
     };
 };
 
@@ -44,7 +45,7 @@ export default function MyBookingsScreen({ navigation }: any) {
             .from('bookings')
             .select(`
         *,
-        vehicles ( make, model, location, price_per_day, is_available )
+        vehicles ( make, model, location, price_per_day, is_available, owner_id )
       `)
             .eq('renter_id', user.id)
             .order('created_at', { ascending: false });
@@ -241,6 +242,22 @@ export default function MyBookingsScreen({ navigation }: any) {
                                 <Text style={styles.cancelButtonText}>Cancel Booking</Text>
                             </TouchableOpacity>
                         )}
+
+                        {/* Chat with Owner button */}
+                        {(item.status === 'pending' || item.status === 'approved') && (
+                            <TouchableOpacity
+                                style={styles.chatButton}
+                                onPress={() => navigation.navigate('Chat', {
+                                    vehicleId: item.vehicle_id,
+                                    ownerId: item.vehicles?.owner_id,
+                                    renterId: user?.id,
+                                    vehicleName: `${item.vehicles?.make} ${item.vehicles?.model}`,
+                                })}
+                            >
+                                <Ionicons name="chatbubble-outline" size={16} color="#8b5cf6" />
+                                <Text style={styles.chatButtonText}>💬 Chat with Owner</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 )}
                 ListEmptyComponent={() => (
@@ -416,6 +433,23 @@ const styles = StyleSheet.create({
     },
     cancelButtonText: {
         color: '#dc2626',
+        fontWeight: '600',
+        fontSize: 14,
+    },
+    chatButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        marginTop: 10,
+        paddingVertical: 10,
+        backgroundColor: '#f3e8ff',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e9d5ff',
+    },
+    chatButtonText: {
+        color: '#7c3aed',
         fontWeight: '600',
         fontSize: 14,
     },
