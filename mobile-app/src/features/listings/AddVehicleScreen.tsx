@@ -14,11 +14,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
-import DropdownPicker from '../components/DropdownPicker';
-import { VEHICLE_MAKES, VEHICLE_MODELS, SRI_LANKA_DISTRICTS } from '../constants/vehicleData';
+import DropdownPicker from '../../components/DropdownPicker';
+import { VEHICLE_MAKES, VEHICLE_MODELS, SRI_LANKA_DISTRICTS } from '../../constants/vehicleData';
 
 export default function AddVehicleScreen({ navigation }: any) {
     const insets = useSafeAreaInsets();

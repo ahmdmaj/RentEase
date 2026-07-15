@@ -9,11 +9,11 @@ import {
     Alert,
     ActivityIndicator,
 } from 'react-native';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
-import DropdownPicker from '../components/DropdownPicker';
-import { VEHICLE_MAKES, VEHICLE_MODELS, SRI_LANKA_DISTRICTS } from '../constants/vehicleData';
+import DropdownPicker from '../../components/DropdownPicker';
+import { VEHICLE_MAKES, VEHICLE_MODELS, SRI_LANKA_DISTRICTS } from '../../constants/vehicleData';
 
 export default function EditVehicleScreen({ route, navigation }: any) {
     const { vehicleId } = route.params;

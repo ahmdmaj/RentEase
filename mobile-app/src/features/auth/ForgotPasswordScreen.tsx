@@ -10,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-import { supabase } from '../services/supabase';
+import { supabase } from '../../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ForgotPasswordScreen({ navigation }: any) {

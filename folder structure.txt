@@ -15,13 +15,20 @@ RentEase/
 │
 ├── /mobile-app                   # React Native source code
 │   ├── /src
-│   │   ├── /screens              # All screens (Home, Detail, Booking, Profile, etc.)
-│   │   ├── /components           # Reusable UI components
+│   │   ├── /features             # Feature-driven module architecture
+│   │   │   ├── /auth             # Login, Signup, Forgot Password
+│   │   │   ├── /listings         # Home, Add/Edit Vehicle, Vehicle Details, My Listings
+│   │   │   ├── /booking          # Bookings, Owner Bookings, My Bookings
+│   │   │   ├── /payment          # Payment processing and checkout flows
+│   │   │   ├── /profile          # User profile and account management
+│   │   │   └── /messaging        # Chat, Messages, Notifications
 │   │   ├── /services             # Supabase client, RPC calls, API wrappers
-│   │   ├── /hooks                # Custom React hooks (e.g., useAuth, useBookings)
-│   │   ├── /context              # State management (AuthContext, BookingContext)
-│   │   ├── /navigation           # Stack and tab navigation configuration
+│   │   ├── /lib                  # Shared library functions and utilities
+│   │   ├── /hooks                # Custom React hooks
 │   │   ├── /utils                # Helper functions (date formatting, validations)
+│   │   ├── /components           # Reusable UI components
+│   │   ├── /store                # Global state stores (authStore, notificationStore)
+│   │   ├── /navigation           # Stack and tab navigation configuration
 │   │   └── /constants            # Colors, strings, configuration constants
 │   ├── /assets                   # Images, fonts, and static assets
 │   ├── App.js                    # Main app entry point
