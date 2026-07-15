@@ -11,11 +11,11 @@ import {
     Animated,
     Image,
 } from 'react-native';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getAvailabilityLabel } from '../constants/vehicleData';
+import { getAvailabilityLabel } from '../../constants/vehicleData';
 
 export default function MyListingsScreen({ navigation }: any) {
     const { user } = useAuthStore();

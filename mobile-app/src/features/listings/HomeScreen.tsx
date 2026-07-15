@@ -15,12 +15,12 @@ import {
   TouchableWithoutFeedback,
   Image,
 } from 'react-native';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
-import { useNotificationStore } from '../store/notificationStore';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
+import { useNotificationStore } from '../../store/notificationStore';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getAvailabilityLabel } from '../constants/vehicleData';
+import { getAvailabilityLabel } from '../../constants/vehicleData';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const DRAWER_WIDTH = SCREEN_WIDTH * 0.75;

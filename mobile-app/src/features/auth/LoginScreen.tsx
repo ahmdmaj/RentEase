@@ -11,7 +11,7 @@ import {
     Platform,
     ScrollView,
 } from 'react-native';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen({ navigation }: any) {

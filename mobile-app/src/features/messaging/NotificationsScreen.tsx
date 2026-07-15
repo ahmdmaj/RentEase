@@ -10,9 +10,9 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
-import { useNotificationStore } from '../store/notificationStore';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
+import { useNotificationStore } from '../../store/notificationStore';
 
 interface NotificationItem {
   id: string;

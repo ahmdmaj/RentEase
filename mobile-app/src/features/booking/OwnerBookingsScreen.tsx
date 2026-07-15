@@ -9,8 +9,8 @@ import {
     Alert,
     RefreshControl,
 } from 'react-native';
-import { supabase } from '../services/supabase';
-import { useAuthStore } from '../store/authStore';
+import { supabase } from '../../services/supabase';
+import { useAuthStore } from '../../store/authStore';
 import { Ionicons } from '@expo/vector-icons';
 
 type Booking = {
