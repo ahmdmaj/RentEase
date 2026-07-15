@@ -4,22 +4,26 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, Text } from 'react-native';
 
 
-// Import screens
-import LoginScreen from '../screens/LoginScreen';
-import SignupScreen from '../screens/SignupScreen';
-import HomeScreen from '../screens/HomeScreen';             // Unified home for all users
-import MyListingsScreen from '../screens/MyListingsScreen'; // Owner listing management (via drawer)
-import AddVehicleScreen from '../screens/AddVehicleScreen';
-import VehicleDetailScreen from '../screens/VehicleDetailScreenRenter';
-import ProfileScreen from '../screens/ProfileScreen';
-import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import BookingScreen from '../screens/BookingScreen';
-import OwnerBookingsScreen from '../screens/OwnerBookingsScreen';
-import MyBookingsScreen from '../screens/MyBookingsScreen';
-import EditVehicleScreen from '../screens/EditVehicleScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
-import ChatScreen from '../screens/ChatScreen';
-import MessagesScreen from '../screens/MessagesScreen';
+// Import screens from feature modules
+import LoginScreen from '../features/auth/LoginScreen';
+import SignupScreen from '../features/auth/SignupScreen';
+import ForgotPasswordScreen from '../features/auth/ForgotPasswordScreen';
+
+import HomeScreen from '../features/listings/HomeScreen';             // Unified home for all users
+import MyListingsScreen from '../features/listings/MyListingsScreen'; // Owner listing management (via drawer)
+import AddVehicleScreen from '../features/listings/AddVehicleScreen';
+import VehicleDetailScreen from '../features/listings/VehicleDetailScreenRenter';
+import EditVehicleScreen from '../features/listings/EditVehicleScreen';
+
+import ProfileScreen from '../features/profile/ProfileScreen';
+
+import BookingScreen from '../features/booking/BookingScreen';
+import OwnerBookingsScreen from '../features/booking/OwnerBookingsScreen';
+import MyBookingsScreen from '../features/booking/MyBookingsScreen';
+
+import NotificationsScreen from '../features/messaging/NotificationsScreen';
+import ChatScreen from '../features/messaging/ChatScreen';
+import MessagesScreen from '../features/messaging/MessagesScreen';
 
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';

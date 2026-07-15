@@ -10,10 +10,10 @@ import {
     Alert,
     Dimensions,
 } from 'react-native';
-import { supabase } from '../services/supabase';
+import { supabase } from '../../services/supabase';
 import { Ionicons } from '@expo/vector-icons';
-import { getAvailabilityLabel } from '../constants/vehicleData';
-import { useAuthStore } from '../store/authStore';
+import { getAvailabilityLabel } from '../../constants/vehicleData';
+import { useAuthStore } from '../../store/authStore';
 
 const { width } = Dimensions.get('window');
 
