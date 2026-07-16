@@ -21,9 +21,9 @@ import BookingScreen from '../features/booking/BookingScreen';
 import OwnerBookingsScreen from '../features/booking/OwnerBookingsScreen';
 import MyBookingsScreen from '../features/booking/MyBookingsScreen';
 
-import NotificationsScreen from '../features/messaging/NotificationsScreen';
-import ChatScreen from '../features/messaging/ChatScreen';
-import MessagesScreen from '../features/messaging/MessagesScreen';
+import NotificationsScreen from '../features/messaging/screens/NotificationsScreen';
+import ChatScreen from '../features/messaging/screens/ChatScreen';
+import ChatListScreen from '../features/messaging/screens/ChatListScreen';
 
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
@@ -73,7 +73,7 @@ export default function AppNavigator() {
                         <Stack.Screen name="EditVehicle" component={EditVehicleScreen} />
                         <Stack.Screen name="Notifications" component={NotificationsScreen} />
                         <Stack.Screen name="Chat" component={ChatScreen} />
-                        <Stack.Screen name="Messages" component={MessagesScreen} />
+                        <Stack.Screen name="Messages" component={ChatListScreen} />
                     </>
                 ) : (
                     <>

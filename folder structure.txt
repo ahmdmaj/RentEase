@@ -21,7 +21,14 @@ RentEase/
 │   │   │   ├── /booking          # Bookings, Owner Bookings, My Bookings
 │   │   │   ├── /payment          # Payment processing and checkout flows
 │   │   │   ├── /profile          # User profile and account management
-│   │   │   └── /messaging        # Chat, Messages, Notifications
+│   │   │   └── /messaging        # Messaging domain module architecture
+│   │   │         ├── /screens    # ChatListScreen, ChatScreen, NotificationsScreen
+│   │   │         ├── /components # ChatBubble, MessageInput, ConversationCard, DateDivider
+│   │   │         ├── /hooks      # useMessages, useRealtimeChat
+│   │   │         ├── /services   # message.service.ts (Supabase real-time API layer)
+│   │   │         ├── /types      # message.ts
+│   │   │         ├── /utils      # formatTime.ts
+│   │   │         └── index.ts    # Centralized module exports
 │   │   ├── /services             # Supabase client, RPC calls, API wrappers
 │   │   ├── /lib                  # Shared library functions and utilities
 │   │   ├── /hooks                # Custom React hooks
