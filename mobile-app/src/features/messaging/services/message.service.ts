@@ -73,48 +73,68 @@ export class MessageService {
                 return { data: [], error: null };
             }
 
-            const enriched: ConversationItem[] = await Promise.all(
-                convData.map(async (conv: any) => {
-                    const isOwner = userId === conv.owner_id;
-                    const otherPartyId = isOwner ? conv.renter_id : conv.owner_id;
-
-                    // Fetch other party profile
-                    const { data: profileData } = await supabase
-                        .from('profiles')
-                        .select('full_name, avatar_url')
-                        .eq('id', otherPartyId)
-                        .maybeSingle();
-
-                    // Fetch last message
-                    const { data: lastMsgData } = await supabase
-                        .from('messages')
-                        .select('message, created_at, sender_id')
-                        .eq('conversation_id', conv.id)
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-
-                    // Count unread messages received by me
-                    const { count: unreadCount } = await supabase
-                        .from('messages')
-                        .select('id', { count: 'exact', head: true })
-                        .eq('conversation_id', conv.id)
-                        .eq('receiver_id', userId)
-                        .eq('is_read', false);
-
-                    const normalizedVehicles = Array.isArray(conv.vehicles)
-                        ? conv.vehicles[0] || null
-                        : conv.vehicles || null;
-
-                    return {
-                        ...conv,
-                        vehicles: normalizedVehicles,
-                        otherPartyProfile: profileData || null,
-                        lastMessage: lastMsgData || null,
-                        unreadCount: unreadCount || 0,
-                    };
-                })
+            const convIds = convData.map((c: any) => c.id);
+            const otherPartyIds = Array.from(
+                new Set(
+                    convData.map((c: any) =>
+                        userId === c.owner_id ? c.renter_id : c.owner_id
+                    )
+                )
             );
+
+            // Batch fetch all participant profiles
+            const { data: profilesList } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', otherPartyIds);
+
+            const profileMap = new Map(
+                (profilesList || []).map((p: any) => [p.id, p])
+            );
+
+            // Batch fetch messages across all conversations for last messages and unread counts
+            const { data: messagesList } = await supabase
+                .from('messages')
+                .select('id, conversation_id, message, created_at, sender_id, receiver_id, is_read')
+                .in('conversation_id', convIds)
+                .order('created_at', { ascending: false });
+
+            const lastMessageMap = new Map();
+            const unreadCountMap = new Map<string, number>();
+
+            (messagesList || []).forEach((msg: any) => {
+                if (!lastMessageMap.has(msg.conversation_id)) {
+                    lastMessageMap.set(msg.conversation_id, {
+                        message: msg.message,
+                        created_at: msg.created_at,
+                        sender_id: msg.sender_id,
+                    });
+                }
+                if (msg.receiver_id === userId && msg.is_read === false) {
+                    const current = unreadCountMap.get(msg.conversation_id) || 0;
+                    unreadCountMap.set(msg.conversation_id, current + 1);
+                }
+            });
+
+            const enriched: ConversationItem[] = convData.map((conv: any) => {
+                const isOwner = userId === conv.owner_id;
+                const otherPartyId = isOwner ? conv.renter_id : conv.owner_id;
+                const profileData = profileMap.get(otherPartyId) || null;
+                const lastMsgData = lastMessageMap.get(conv.id) || null;
+                const unreadCount = unreadCountMap.get(conv.id) || 0;
+
+                const normalizedVehicles = Array.isArray(conv.vehicles)
+                    ? conv.vehicles[0] || null
+                    : conv.vehicles || null;
+
+                return {
+                    ...conv,
+                    vehicles: normalizedVehicles,
+                    otherPartyProfile: profileData,
+                    lastMessage: lastMsgData,
+                    unreadCount,
+                };
+            });
 
             // Sort by most recent message/conversation timestamp
             enriched.sort((a, b) => {
@@ -278,7 +298,8 @@ export class MessageService {
 
     /**
      * ============================================================
-     * HELPER METHODS & REALTIME SUBSCRIPTIONS (Used by hooks)
+     * HELPER METHODS (Used by hooks)
+     * Realtime subscriptions are managed by realtime.service.ts
      * ============================================================
      */
 
@@ -309,66 +330,6 @@ export class MessageService {
         }
     }
 
-    /**
-     * Subscribe to new messages inside a specific conversation via Supabase Realtime.
-     */
-    subscribeToConversation(
-        conversationId: string,
-        onReceive: (message: Message) => void
-    ): { unsubscribe: () => void } {
-        const channel = supabase
-            .channel(`messages_channel:${conversationId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `conversation_id=eq.${conversationId}`,
-                },
-                (payload) => {
-                    const newMessage = payload.new as Message;
-                    onReceive(newMessage);
-                }
-            )
-            .subscribe();
-
-        return {
-            unsubscribe: () => {
-                supabase.removeChannel(channel);
-            },
-        };
-    }
-
-    /**
-     * Subscribe to new messages received by a specific user across all conversations.
-     */
-    subscribeToUserMessages(
-        userId: string,
-        onUpdate: () => void
-    ): { unsubscribe: () => void } {
-        const channel = supabase
-            .channel(`user_messages_live:${userId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `receiver_id=eq.${userId}`,
-                },
-                () => {
-                    onUpdate();
-                }
-            )
-            .subscribe();
-
-        return {
-            unsubscribe: () => {
-                supabase.removeChannel(channel);
-            },
-        };
-    }
 }
 
 export const messageService = new MessageService();

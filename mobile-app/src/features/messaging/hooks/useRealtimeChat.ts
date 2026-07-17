@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useAuthStore } from '../../../store/authStore';
 import { messageService } from '../services/message.service';
@@ -38,8 +38,11 @@ export const useRealtimeChat = ({
     // Determine the exact renterId (either passed via route or defaulted to current user if not owner)
     const resolvedRenterId = renterId || (user && ownerId && user.id !== ownerId ? user.id : undefined);
 
+    const isMounted = useRef(true);
+
     const fetchMessages = useCallback(async (convId: string) => {
         const { data, error: fetchErr } = await messageService.getMessages(convId);
+        if (!isMounted.current) return;
         if (fetchErr) {
             setError(typeof fetchErr === 'string' ? fetchErr : fetchErr.message || 'Failed to load messages');
         } else {
@@ -108,6 +111,8 @@ export const useRealtimeChat = ({
         };
 
         setupConversation();
+
+        return () => { isMounted.current = false; };
     }, [user, vehicleId, ownerId, resolvedRenterId, initialConversationId, fetchMessages]);
 
     // 2. Realtime Subscription via realtimeService
@@ -152,8 +157,7 @@ export const useRealtimeChat = ({
         };
     }, [conversationId, user?.id]);
 
-    // 3. Send Message handler
-    const handleSendMessage = async () => {
+    const handleSendMessage = useCallback(async () => {
         if (!inputText.trim() || !conversationId || !user) return;
 
         const messageContent = inputText.trim();
@@ -165,6 +169,13 @@ export const useRealtimeChat = ({
             ownerId && user.id === ownerId
                 ? resolvedRenterId || ''
                 : ownerId || '';
+
+        // Guard: receiver must be resolved to a real user
+        if (!receiverId) {
+            Alert.alert('Error', 'Could not determine message recipient.');
+            setSending(false);
+            return;
+        }
 
         // Optimistic UI update
         const tempId = `temp-${Date.now()}`;
@@ -200,7 +211,7 @@ export const useRealtimeChat = ({
         }
 
         setSending(false);
-    };
+    }, [inputText, conversationId, user, ownerId, resolvedRenterId]);
 
     return {
         user,

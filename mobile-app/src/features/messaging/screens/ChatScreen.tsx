@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
     StyleSheet,
     Text,
@@ -46,13 +46,13 @@ export default function ChatScreen({ route, navigation }: any) {
         conversationId: routeConversationId,
     });
 
-    // 2. Messaging hook for refreshing and read-status synchronization
+    // 2. Messaging hook — only used for pull-to-refresh and markAsRead, not for loading messages.
+    // Pass routeConversationId only (not the derived conversationId) to avoid duplicate subscriptions.
     const {
         markAsRead,
         refreshMessages,
         refreshing,
-        loading: messagesLoading,
-    } = useMessages(conversationId || routeConversationId);
+    } = useMessages(routeConversationId);
 
     // Mark conversation messages as read when conversation ID or message count updates
     useEffect(() => {
@@ -61,7 +61,7 @@ export default function ChatScreen({ route, navigation }: any) {
         }
     }, [conversationId, messages.length, markAsRead]);
 
-    const isSameDay = (d1Str: string, d2Str: string) => {
+    const isSameDay = useCallback((d1Str: string, d2Str: string) => {
         if (!d1Str || !d2Str) return false;
         const d1 = new Date(d1Str);
         const d2 = new Date(d2Str);
@@ -70,9 +70,9 @@ export default function ChatScreen({ route, navigation }: any) {
             d1.getMonth() === d2.getMonth() &&
             d1.getDate() === d2.getDate()
         );
-    };
+    }, []);
 
-    const renderMessageItem = ({ item, index }: { item: Message; index: number }) => {
+    const renderMessageItem = useCallback(({ item, index }: { item: Message; index: number }) => {
         const isMyMessage = item.sender_id === user?.id;
         const prevItem = index > 0 ? messages[index - 1] : null;
         const showDivider = !prevItem || !isSameDay(prevItem.created_at, item.created_at);
@@ -83,9 +83,9 @@ export default function ChatScreen({ route, navigation }: any) {
                 <ChatBubble message={item} isMyMessage={isMyMessage} />
             </View>
         );
-    };
+    }, [messages, user?.id, isSameDay]);
 
-    const isLoading = realtimeLoading && (messagesLoading || messages.length === 0);
+    const isLoading = realtimeLoading && messages.length === 0;
 
     if (isLoading) {
         return (

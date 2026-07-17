@@ -23,17 +23,18 @@ export interface ConversationRealtimeCallbacks {
  */
 export class RealtimeService {
     private activeChannels: Map<string, RealtimeChannel> = new Map();
+    private subIdCounter = 0;
 
     /**
      * Subscribe to new or updated messages in a specific conversation.
-     * Useful for the active chat screen (`ChatScreen`).
+     * Generates a unique channel ID per subscription to prevent clobbering
+     * across concurrent hooks or components.
      */
     subscribeToMessages(
         conversationId: string,
         callbacks: MessageRealtimeCallbacks
     ): { channel: RealtimeChannel; unsubscribe: () => void } {
-        const channelName = `messages:conv:${conversationId}`;
-        this.cleanupChannel(channelName);
+        const channelName = `messages:conv:${conversationId}:${++this.subIdCounter}`;
 
         const channel = supabase
             .channel(channelName)
@@ -91,14 +92,12 @@ export class RealtimeService {
 
     /**
      * Subscribe to any new messages directed to a specific user across all conversations.
-     * Useful for updating unread badges or notification sounds on any screen.
      */
     subscribeToUserMessages(
         userId: string,
         callbacks: MessageRealtimeCallbacks
     ): { channel: RealtimeChannel; unsubscribe: () => void } {
-        const channelName = `messages:user:${userId}`;
-        this.cleanupChannel(channelName);
+        const channelName = `messages:user:${userId}:${++this.subIdCounter}`;
 
         const channel = supabase
             .channel(channelName)
@@ -142,14 +141,12 @@ export class RealtimeService {
 
     /**
      * Subscribe to conversation updates or new conversations for a specific user.
-     * Useful for keeping `ChatListScreen` live without manual refreshes.
      */
     subscribeToConversations(
         userId: string,
         callbacks: ConversationRealtimeCallbacks
     ): { channel: RealtimeChannel; unsubscribe: () => void } {
-        const channelName = `conversations:user:${userId}`;
-        this.cleanupChannel(channelName);
+        const channelName = `conversations:user:${userId}:${++this.subIdCounter}`;
 
         const channel = supabase
             .channel(channelName)
@@ -239,7 +236,6 @@ export class RealtimeService {
                     return;
                 }
             }
-            // Even if not tracked in map, remove it
             supabase.removeChannel(channelOrName);
         }
     }
