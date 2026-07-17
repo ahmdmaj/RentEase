@@ -15,6 +15,7 @@ export { useRealtimeChat } from './hooks/useRealtimeChat';
 
 // Services
 export { messageService } from './services/message.service';
+export { realtimeService, RealtimeService } from './services/realtime.service';
 
 // Types
 export * from './types/message';
