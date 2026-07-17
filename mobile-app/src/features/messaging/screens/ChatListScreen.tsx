@@ -13,6 +13,14 @@ import { useMessages } from '../hooks/useMessages';
 import { ConversationCard } from '../components/ConversationCard';
 import { ConversationItem } from '../types/message';
 
+/**
+ * ============================================================
+ * CHAT LIST SCREEN COMPONENT
+ * Displays all conversations for the logged-in user, showing
+ * the last message and unread count. Navigates to ChatScreen on tap.
+ * Uses useMessages hook powered by the messaging service layer.
+ * ============================================================
+ */
 export default function ChatListScreen({ navigation }: any) {
     const {
         conversations,
@@ -23,17 +31,17 @@ export default function ChatListScreen({ navigation }: any) {
         user,
     } = useMessages();
 
+    // Reload conversations whenever the screen comes into focus
     useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
+        const unsubscribe = navigation?.addListener('focus', () => {
             fetchConversations();
         });
         return unsubscribe;
     }, [navigation, fetchConversations]);
 
-    const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+    const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
     const renderConversation = ({ item }: { item: ConversationItem }) => {
-        const isOwner = user?.id === item.owner_id;
         const vehicleName = item.vehicles
             ? `${item.vehicles.make} ${item.vehicles.model}`
             : 'Vehicle';
@@ -43,7 +51,8 @@ export default function ChatListScreen({ navigation }: any) {
                 item={item}
                 currentUserId={user?.id}
                 onPress={() =>
-                    navigation.navigate('Chat', {
+                    navigation?.navigate('Chat', {
+                        conversationId: item.id,
                         vehicleId: item.vehicle_id,
                         ownerId: item.owner_id,
                         renterId: item.renter_id,
@@ -66,7 +75,11 @@ export default function ChatListScreen({ navigation }: any) {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                <TouchableOpacity
+                    onPress={() => navigation?.goBack()}
+                    style={styles.backBtn}
+                    accessibilityLabel="Back"
+                >
                     <Ionicons name="arrow-back" size={24} color="#1e293b" />
                 </TouchableOpacity>
                 <View style={styles.headerTitleGroup}>
@@ -131,7 +144,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 56,
         paddingBottom: 16,
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff',
         borderBottomWidth: 1,
         borderBottomColor: '#e2e8f0',
         gap: 12,
@@ -170,6 +183,7 @@ const styles = StyleSheet.create({
     listContent: {
         paddingVertical: 8,
         paddingBottom: 40,
+        flexGrow: 1,
     },
     separator: {
         height: 1,

@@ -3,11 +3,21 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Message } from '../types/message';
 import { formatMessageTime } from '../utils/formatTime';
 
-interface ChatBubbleProps {
+export interface ChatBubbleProps {
+    /** The message object containing text, timestamps, and status */
     message: Message;
+    /** True if the message was sent by the current user (renders on the right) */
     isMyMessage: boolean;
 }
 
+/**
+ * ============================================================
+ * CHAT BUBBLE COMPONENT
+ * Pure UI presentation for sent and received chat messages.
+ * Displays message content and formatted timestamp.
+ * No business logic.
+ * ============================================================
+ */
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
     message,
     isMyMessage,
@@ -15,83 +25,98 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
     return (
         <View
             style={[
-                styles.messageRow,
-                isMyMessage ? styles.myMessageRow : styles.theirMessageRow,
+                styles.rowContainer,
+                isMyMessage ? styles.sentRow : styles.receivedRow,
             ]}
         >
             <View
                 style={[
-                    styles.messageBubble,
-                    isMyMessage ? styles.myBubble : styles.theirBubble,
+                    styles.bubble,
+                    isMyMessage ? styles.sentBubble : styles.receivedBubble,
                 ]}
             >
                 <Text
                     style={[
                         styles.messageText,
-                        isMyMessage ? styles.myText : styles.theirText,
+                        isMyMessage ? styles.sentText : styles.receivedText,
                     ]}
                 >
                     {message.message}
                 </Text>
-                <Text
-                    style={[
-                        styles.timeText,
-                        isMyMessage ? styles.myTimeText : styles.theirTimeText,
-                    ]}
-                >
-                    {formatMessageTime(message.created_at)}
-                </Text>
+                
+                <View style={styles.footerRow}>
+                    <Text
+                        style={[
+                            styles.timestampText,
+                            isMyMessage ? styles.sentTimestamp : styles.receivedTimestamp,
+                        ]}
+                    >
+                        {formatMessageTime(message.created_at)}
+                    </Text>
+                </View>
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    messageRow: {
+    rowContainer: {
         flexDirection: 'row',
-        marginBottom: 8,
+        marginVertical: 4,
+        paddingHorizontal: 4,
     },
-    myMessageRow: {
+    sentRow: {
         justifyContent: 'flex-end',
     },
-    theirMessageRow: {
+    receivedRow: {
         justifyContent: 'flex-start',
     },
-    messageBubble: {
+    bubble: {
         maxWidth: '80%',
         paddingHorizontal: 14,
-        paddingVertical: 10,
-        borderRadius: 16,
+        paddingTop: 10,
+        paddingBottom: 8,
+        borderRadius: 18,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
     },
-    myBubble: {
+    sentBubble: {
         backgroundColor: '#2563eb',
         borderBottomRightRadius: 4,
     },
-    theirBubble: {
-        backgroundColor: '#fff',
+    receivedBubble: {
+        backgroundColor: '#ffffff',
         borderBottomLeftRadius: 4,
         borderWidth: 1,
-        borderColor: '#e2e8f0',
+        borderColor: '#f1f5f9',
     },
     messageText: {
-        fontSize: 16,
-        lineHeight: 22,
+        fontSize: 15,
+        lineHeight: 20,
     },
-    myText: {
-        color: '#fff',
+    sentText: {
+        color: '#ffffff',
     },
-    theirText: {
+    receivedText: {
         color: '#1e293b',
     },
-    timeText: {
-        fontSize: 10,
+    footerRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
         marginTop: 4,
-        alignSelf: 'flex-end',
     },
-    myTimeText: {
+    timestampText: {
+        fontSize: 11,
+        fontWeight: '500',
+    },
+    sentTimestamp: {
         color: '#bfdbfe',
     },
-    theirTimeText: {
+    receivedTimestamp: {
         color: '#94a3b8',
     },
 });
