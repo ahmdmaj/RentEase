@@ -9,18 +9,20 @@ type Booking = {
     start_date: string;
     end_date: string;
     total_price: number;
-    status: 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
+    status: 'pending' | 'approved' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
+    payment_status: 'unpaid' | 'paid' | 'refunded';
     created_at: string;
     vehicles: { make: string; model: string; location: string; price_per_day: number } | null;
     profiles: { full_name: string; phone: string } | null;
 };
 
-type FilterStatus = 'all' | 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
+type FilterStatus = 'all' | 'pending' | 'approved' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
 
 const STATUS_TABS: { key: FilterStatus; label: string }[] = [
     { key: 'all', label: 'All' },
     { key: 'pending', label: '⏳ Pending' },
     { key: 'approved', label: '✅ Approved' },
+    { key: 'confirmed', label: '💳 Confirmed' },
     { key: 'rejected', label: '❌ Rejected' },
     { key: 'completed', label: '🏁 Completed' },
     { key: 'cancelled', label: '🚫 Cancelled' },
@@ -77,6 +79,7 @@ export default function Bookings() {
         switch (status) {
             case 'pending': return 'status-pending';
             case 'approved': return 'status-approved';
+            case 'confirmed': return 'status-approved';
             case 'rejected': return 'status-rejected';
             case 'completed': return 'status-completed';
             case 'cancelled': return 'status-cancelled';
@@ -150,6 +153,7 @@ export default function Bookings() {
                                 <th>Duration</th>
                                 <th>Total</th>
                                 <th>Status</th>
+                                <th>Payment</th>
                                 <th>Booked</th>
                             </tr>
                         </thead>
@@ -182,6 +186,14 @@ export default function Bookings() {
                                     <td>
                                         <span className={`status-pill ${getStatusClass(b.status)}`}>
                                             {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`status-pill ${
+                                            (b as any).payment_status === 'paid' ? 'status-approved' : 'status-pending'
+                                        }`}>
+                                            {(b as any).payment_status === 'paid' ? '💳 Paid' :
+                                             (b as any).payment_status === 'refunded' ? '↩ Refunded' : '⏳ Unpaid'}
                                         </span>
                                     </td>
                                     <td>

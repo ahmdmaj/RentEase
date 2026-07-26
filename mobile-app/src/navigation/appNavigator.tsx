@@ -25,6 +25,9 @@ import NotificationsScreen from '../features/messaging/screens/NotificationsScre
 import ChatScreen from '../features/messaging/screens/ChatScreen';
 import ChatListScreen from '../features/messaging/screens/ChatListScreen';
 
+import PaymentScreen from '../features/payment/screens/PaymentScreen';
+import PaymentSuccessScreen from '../features/payment/screens/PaymentSuccessScreen';
+
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 
@@ -74,6 +77,8 @@ export default function AppNavigator() {
                         <Stack.Screen name="Notifications" component={NotificationsScreen} />
                         <Stack.Screen name="Chat" component={ChatScreen} />
                         <Stack.Screen name="Messages" component={ChatListScreen} />
+                        <Stack.Screen name="Payment" component={PaymentScreen} />
+                        <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
                     </>
                 ) : (
                     <>

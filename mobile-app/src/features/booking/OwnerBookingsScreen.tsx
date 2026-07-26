@@ -20,7 +20,8 @@ type Booking = {
     start_date: string;
     end_date: string;
     total_price: number;
-    status: 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
+    status: 'pending' | 'approved' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
+    payment_status: 'unpaid' | 'paid' | 'refunded';
     created_at: string;
     vehicles: {
         make: string;
@@ -143,9 +144,10 @@ export default function OwnerBookingsScreen({ navigation }: any) {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'pending': return '#f59e0b';
-            case 'approved': return '#22c55e';
+            case 'approved': return '#3b82f6';
+            case 'confirmed': return '#22c55e';
             case 'rejected': return '#ef4444';
-            case 'completed': return '#3b82f6';
+            case 'completed': return '#8b5cf6';
             case 'cancelled': return '#94a3b8';
             default: return '#94a3b8';
         }
@@ -155,6 +157,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
         switch (status) {
             case 'pending': return 'time-outline';
             case 'approved': return 'checkmark-circle-outline';
+            case 'confirmed': return 'shield-checkmark-outline';
             case 'rejected': return 'close-circle-outline';
             case 'completed': return 'checkmark-done-circle-outline';
             case 'cancelled': return 'ban-outline';
@@ -288,6 +291,25 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                                 <Text style={styles.priceLabel}>Total Price</Text>
                                 <Text style={styles.priceValue}>LKR {item.total_price}</Text>
                             </View>
+
+                            {/* Payment Status Badge */}
+                            <View style={styles.paymentBadgeRow}>
+                                <Ionicons
+                                    name={item.payment_status === 'paid' ? 'checkmark-circle' : 'hourglass-outline'}
+                                    size={14}
+                                    color={item.payment_status === 'paid' ? '#16a34a' : '#f59e0b'}
+                                />
+                                <Text style={[
+                                    styles.paymentBadgeText,
+                                    { color: item.payment_status === 'paid' ? '#16a34a' : '#f59e0b' }
+                                ]}>
+                                    {item.payment_status === 'paid'
+                                        ? 'Payment Received ✓'
+                                        : item.status === 'approved'
+                                            ? 'Awaiting Payment'
+                                            : 'Unpaid'}
+                                </Text>
+                            </View>
                         </View>
 
                         {item.status === 'pending' && (
@@ -307,7 +329,18 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                             </View>
                         )}
 
-                        {item.status === 'approved' && (
+                        {item.status === 'approved' && item.payment_status === 'unpaid' && (
+                            <View style={styles.cardActions}>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.completeButton]}
+                                    onPress={() => handleCompleteBooking(item.id, item.vehicle_id)}
+                                >
+                                    <Text style={styles.actionButtonText}>✅ Mark as Completed</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+
+                        {item.status === 'confirmed' && (
                             <View style={styles.cardActions}>
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.completeButton]}
@@ -319,7 +352,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
                         )}
 
                         {/* Chat Button */}
-                        {(item.status === 'pending' || item.status === 'approved') && (
+                        {(item.status === 'pending' || item.status === 'approved' || item.status === 'confirmed') && (
                             <TouchableOpacity
                                 style={styles.chatButton}
                                 onPress={() => navigation.navigate('Chat', {
@@ -513,6 +546,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         color: '#16a34a',
+    },
+    paymentBadgeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        paddingTop: 6,
+    },
+    paymentBadgeText: {
+        fontSize: 12,
+        fontWeight: '600',
     },
     cardActions: {
         flexDirection: 'row',

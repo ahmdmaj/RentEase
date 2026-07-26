@@ -19,7 +19,8 @@ type Booking = {
     start_date: string;
     end_date: string;
     total_price: number;
-    status: 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
+    status: 'pending' | 'approved' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
+    payment_status: 'unpaid' | 'paid' | 'refunded';
     created_at: string;
     vehicles: {
         make: string;
@@ -104,9 +105,10 @@ export default function MyBookingsScreen({ navigation }: any) {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'pending': return '#f59e0b';
-            case 'approved': return '#22c55e';
+            case 'approved': return '#3b82f6';
+            case 'confirmed': return '#22c55e';
             case 'rejected': return '#ef4444';
-            case 'completed': return '#3b82f6';
+            case 'completed': return '#8b5cf6';
             case 'cancelled': return '#94a3b8';
             default: return '#94a3b8';
         }
@@ -116,6 +118,7 @@ export default function MyBookingsScreen({ navigation }: any) {
         switch (status) {
             case 'pending': return 'time-outline';
             case 'approved': return 'checkmark-circle-outline';
+            case 'confirmed': return 'shield-checkmark-outline';
             case 'rejected': return 'close-circle-outline';
             case 'completed': return 'checkmark-done-circle-outline';
             case 'cancelled': return 'ban-outline';
@@ -234,6 +237,30 @@ export default function MyBookingsScreen({ navigation }: any) {
                             </View>
                         </View>
 
+                        {/* Pay Now button — shown when booking is approved and payment is pending */}
+                        {item.status === 'approved' && item.payment_status === 'unpaid' && (
+                            <TouchableOpacity
+                                style={styles.payNowButton}
+                                onPress={() => {
+                                    const days = Math.ceil(
+                                        (new Date(item.end_date).getTime() - new Date(item.start_date).getTime())
+                                        / (1000 * 60 * 60 * 24)
+                                    );
+                                    navigation.navigate('Payment', {
+                                        bookingId: item.id,
+                                        amount: item.total_price,
+                                        vehicleName: `${item.vehicles?.make} ${item.vehicles?.model}`,
+                                        startDate: formatDate(item.start_date),
+                                        endDate: formatDate(item.end_date),
+                                        days,
+                                    });
+                                }}
+                            >
+                                <Ionicons name="card-outline" size={16} color="#fff" />
+                                <Text style={styles.payNowButtonText}>💳 Pay Now to Confirm</Text>
+                            </TouchableOpacity>
+                        )}
+
                         {item.status === 'pending' && (
                             <TouchableOpacity
                                 style={styles.cancelButton}
@@ -244,7 +271,7 @@ export default function MyBookingsScreen({ navigation }: any) {
                         )}
 
                         {/* Chat with Owner button */}
-                        {(item.status === 'pending' || item.status === 'approved') && (
+                        {(item.status === 'pending' || item.status === 'approved' || item.status === 'confirmed') && (
                             <TouchableOpacity
                                 style={styles.chatButton}
                                 onPress={() => navigation.navigate('Chat', {
@@ -435,6 +462,26 @@ const styles = StyleSheet.create({
         color: '#dc2626',
         fontWeight: '600',
         fontSize: 14,
+    },
+    payNowButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        marginTop: 12,
+        paddingVertical: 13,
+        backgroundColor: '#2563eb',
+        borderRadius: 10,
+        shadowColor: '#2563eb',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+        elevation: 4,
+    },
+    payNowButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 15,
     },
     chatButton: {
         flexDirection: 'row',

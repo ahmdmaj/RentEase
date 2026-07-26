@@ -106,7 +106,7 @@ export default function BookingScreen({ route, navigation }: any) {
 
             Alert.alert(
                 'Booking Request Sent to Owner! 🎉',
-                `Your booking request for ${vehicle.make} ${vehicle.model} has been sent directly to the vehicle owner.\n\nTotal: LKR ${totalPrice}\nStatus: Pending Owner Approval\n\nThe owner has been notified and will review, accept, or reject your booking request shortly. You can check the status anytime in My Bookings!`,
+                `Your booking request for ${vehicle.make} ${vehicle.model} has been sent to the owner.\n\nTotal: LKR ${totalPrice}\n\nNext steps:\n1. The owner will review and approve/reject your request\n2. Once approved, you will complete payment to confirm the booking\n\nCheck the status anytime in My Bookings.`,
                 [{ text: 'OK', onPress: () => navigation.navigate('Home') }]
             );
         } catch (error: any) {
@@ -228,7 +228,7 @@ export default function BookingScreen({ route, navigation }: any) {
                 {loading ? (
                     <ActivityIndicator color="#fff" />
                 ) : (
-                    <Text style={styles.confirmButtonText}>✅ Confirm Booking</Text>
+                    <Text style={styles.confirmButtonText}>📋 Send Booking Request</Text>
                 )}
             </TouchableOpacity>
 

@@ -47,7 +47,7 @@ export default function Dashboard() {
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            const [usersRes, vehiclesRes, bookingsRes, approvalsRes, recentRes, pendingRes] =
+            const [usersRes, vehiclesRes, bookingsRes, approvalsRes, recentRes, pendingRes, revenueRes] =
                 await Promise.all([
                     supabase.from('profiles').select('id', { count: 'exact', head: true }),
                     supabase.from('vehicles').select('id', { count: 'exact', head: true }),
@@ -64,13 +64,21 @@ export default function Dashboard() {
                         .eq('status', 'pending')
                         .order('submitted_at', { ascending: true })
                         .limit(4),
+                    // Fetch actual paid revenue from payments table
+                    supabase
+                        .from('payments')
+                        .select('amount')
+                        .eq('status', 'success'),
                 ]);
 
             const bookings = bookingsRes.data || [];
-            const revenue = bookings
-                .filter((b) => b.status === 'completed' || b.status === 'approved')
-                .reduce((sum, b) => sum + (b.total_price || 0), 0);
-            const active = bookings.filter((b) => b.status === 'approved').length;
+            // Revenue comes from actual successful payments, not estimated from bookings
+            const revenue = (revenueRes.data || []).reduce(
+                (sum: number, p: any) => sum + (p.amount || 0), 0
+            );
+            const active = bookings.filter(
+                (b) => b.status === 'approved' || b.status === 'confirmed'
+            ).length;
 
             setStats({
                 totalUsers: usersRes.count || 0,
