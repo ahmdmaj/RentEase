@@ -1,60 +1,194 @@
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
+import type { Vehicle } from '../../lib/types';
 
 export default function VehicleDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-  return (
-    <div>
-      {/* Back button */}
-      <button onClick={() => history.back()} className="btn-ghost mb-6">
-        ← Back to listings
-      </button>
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeImg, setActiveImg] = useState(0);
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Images + Details */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Image */}
-          <div className="w-full h-72 bg-slate-200 rounded-2xl animate-pulse" />
+  useEffect(() => {
+    if (!id) return;
+    const fetchVehicle = async () => {
+      setLoading(true);
+      const { data, error: err } = await supabase
+        .from('vehicles')
+        .select('*, profiles(full_name), vehicle_images(id, image_url, display_order)')
+        .eq('id', id)
+        .single();
 
-          {/* Info Card */}
-          <div className="card space-y-4">
-            <div className="h-7 bg-slate-200 rounded w-2/3 animate-pulse" />
-            <div className="h-4 bg-slate-100 rounded w-1/3 animate-pulse" />
-            <div className="h-4 bg-slate-100 rounded w-full animate-pulse" />
-            <div className="h-4 bg-slate-100 rounded w-3/4 animate-pulse" />
-          </div>
-        </div>
+      if (err || !data) {
+        setError('Vehicle not found.');
+        setLoading(false);
+        return;
+      }
 
-        {/* Right: Booking Card */}
-        <div className="card h-fit space-y-4">
-          <h2 className="text-lg font-bold text-slate-900">Book this vehicle</h2>
-          <div className="h-4 bg-slate-200 rounded w-1/2 animate-pulse" />
-          <div className="space-y-3">
-            <div>
-              <label className="label">Pick-up Date</label>
-              <input type="date" className="input" />
-            </div>
-            <div>
-              <label className="label">Return Date</label>
-              <input type="date" className="input" />
-            </div>
-          </div>
-          <div className="border-t border-slate-100 pt-4">
-            <div className="flex justify-between text-sm text-slate-500 mb-1">
-              <span>Price per day</span>
-              <span className="h-4 bg-slate-200 rounded w-16 animate-pulse inline-block" />
-            </div>
-            <div className="flex justify-between font-bold text-slate-900">
-              <span>Total</span>
-              <span>—</span>
+      const v = data as Vehicle;
+      v.vehicle_images = v.vehicle_images?.sort((a, b) => a.display_order - b.display_order);
+      setVehicle(v);
+      setLoading(false);
+    };
+
+    fetchVehicle();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto">
+        <div className="h-5 bg-slate-200 rounded w-32 mb-6 animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-3 space-y-4">
+            <div className="h-72 bg-slate-200 rounded-2xl animate-pulse" />
+            <div className="card space-y-3">
+              {[3, 2, 4, 3].map((w, i) => (
+                <div key={i} className={`h-4 bg-slate-200 rounded animate-pulse`} style={{ width: `${w * 25}%` }} />
+              ))}
             </div>
           </div>
-          <button className="btn-primary w-full">Book Now</button>
-          <button className="btn-outline w-full">💬 Chat with Owner</button>
+          <div className="lg:col-span-2">
+            <div className="card space-y-4 animate-pulse">
+              {[2, 3, 4, 2, 2].map((w, i) => (
+                <div key={i} className={`h-5 bg-slate-200 rounded`} style={{ width: `${w * 25}%` }} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <p className="text-xs text-slate-400 mt-2">Vehicle ID: {id}</p>
+  if (error || !vehicle) {
+    return (
+      <div className="max-w-5xl mx-auto text-center py-20">
+        <div className="text-5xl mb-4">😕</div>
+        <h2 className="text-lg font-semibold text-slate-700 mb-2">{error || 'Vehicle not found'}</h2>
+        <Link to="/" className="btn-primary mt-4">Back to Browse</Link>
+      </div>
+    );
+  }
+
+  const images = vehicle.vehicle_images ?? [];
+  const currentImg = images[activeImg]?.image_url ?? null;
+
+  const specs = [
+    { label: 'Fuel', value: vehicle.fuel_type, icon: '⛽' },
+    { label: 'Transmission', value: vehicle.transmission, icon: '⚙️' },
+    { label: 'Seats', value: vehicle.seating_capacity ? `${vehicle.seating_capacity}` : null, icon: '💺' },
+    { label: 'Year', value: vehicle.year ? `${vehicle.year}` : null, icon: '📅' },
+    { label: 'Location', value: vehicle.location, icon: '📍' },
+  ].filter((s) => s.value);
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* Back */}
+      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary-600 mb-6 transition-colors">
+        ← Back
+      </button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Left — Images + Details */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Main Image */}
+          <div className="card p-0 overflow-hidden">
+            <div className="h-72 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center rounded-t-2xl overflow-hidden">
+              {currentImg ? (
+                <img src={currentImg} alt={`${vehicle.make} ${vehicle.model}`} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-6xl font-bold text-slate-300">
+                  {vehicle.make[0]}{vehicle.model[0]}
+                </span>
+              )}
+            </div>
+            {/* Thumbnails */}
+            {images.length > 1 && (
+              <div className="flex gap-2 p-4">
+                {images.map((img, i) => (
+                  <button
+                    key={img.id}
+                    onClick={() => setActiveImg(i)}
+                    className={`h-14 w-20 rounded-lg overflow-hidden border-2 transition-all ${i === activeImg ? 'border-primary-500' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  >
+                    <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          {vehicle.description && (
+            <div className="card space-y-3">
+              <h2 className="text-lg font-semibold text-slate-900">About this vehicle</h2>
+              <p className="text-slate-500 text-sm leading-relaxed">{vehicle.description}</p>
+            </div>
+          )}
+
+          {/* Specs */}
+          {specs.length > 0 && (
+            <div className="card">
+              <h2 className="text-lg font-semibold text-slate-900 mb-4">Specifications</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {specs.map((spec) => (
+                  <div key={spec.label} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+                    <span className="text-xl">{spec.icon}</span>
+                    <div>
+                      <p className="text-xs text-slate-400 font-medium">{spec.label}</p>
+                      <p className="text-sm font-semibold text-slate-800">{spec.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right — Booking Card */}
+        <div className="lg:col-span-2">
+          <div className="card sticky top-24">
+            <div className="mb-4">
+              <span className={`badge mb-2 ${vehicle.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                {vehicle.is_available ? '● Available' : '● Unavailable'}
+              </span>
+              <h1 className="text-xl font-bold text-slate-900 mt-1">
+                {vehicle.make} {vehicle.model}
+              </h1>
+              <p className="text-slate-400 text-sm mt-0.5">
+                Listed by <span className="font-medium text-slate-600">{vehicle.profiles?.full_name ?? 'Owner'}</span>
+              </p>
+            </div>
+
+            <div className="flex items-baseline gap-1 mb-6">
+              <span className="text-3xl font-bold text-primary-600">
+                LKR {vehicle.price_per_day.toLocaleString()}
+              </span>
+              <span className="text-slate-400 text-sm">/ day</span>
+            </div>
+
+            {vehicle.is_available ? (
+              <>
+                <Link
+                  to={`/book/${vehicle.id}`}
+                  className="btn-primary w-full text-center block"
+                >
+                  Book Now
+                </Link>
+                <p className="text-center text-xs text-slate-400 mt-3">
+                  You won't be charged until the owner approves.
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-3 px-4 bg-red-50 rounded-xl text-sm text-red-600 font-medium">
+                This vehicle is currently unavailable
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
