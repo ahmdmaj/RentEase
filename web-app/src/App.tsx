@@ -15,6 +15,9 @@ import MyListingsPage from './pages/listings/MyListingsPage';
 import AddVehiclePage from './pages/listings/AddVehiclePage';
 import EditVehiclePage from './pages/listings/EditVehiclePage';
 
+// Owner Application
+import ApplyOwnerPage from './pages/owner/ApplyOwnerPage';
+
 // Booking
 import BookingPage from './pages/booking/BookingPage';
 import MyBookingsPage from './pages/booking/MyBookingsPage';
@@ -51,6 +54,9 @@ function App() {
               <Route path="/my-listings" element={<MyListingsPage />} />
               <Route path="/add-vehicle" element={<AddVehiclePage />} />
               <Route path="/edit-vehicle/:id" element={<EditVehiclePage />} />
+
+              {/* Owner Application */}
+              <Route path="/become-owner" element={<ApplyOwnerPage />} />
 
               {/* Booking */}
               <Route path="/book/:id" element={<BookingPage />} />
