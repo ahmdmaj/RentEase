@@ -87,6 +87,7 @@ export default function Navbar() {
       : 'text-slate-600 hover:text-primary-600 hover:bg-slate-50';
 
   const isOwner = profile?.role === 'owner';
+  const isRenter = profile?.role === 'renter';
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
@@ -161,15 +162,32 @@ export default function Navbar() {
                 </Link>
               </>
             )}
+
+            {isRenter && (
+              <Link
+                to="/become-owner"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-emerald-700 hover:bg-emerald-50 transition-all duration-150 ${location.pathname === '/become-owner' ? 'bg-emerald-50 font-semibold' : ''}`}
+              >
+                <span>💼</span>
+                <span>Become an Owner</span>
+              </Link>
+            )}
           </div>
 
           {/* Right side Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {isOwner && (
+            {isOwner ? (
               <Link to="/add-vehicle" className="hidden sm:inline-flex btn-primary text-xs py-2 px-3.5">
                 + Add Vehicle
               </Link>
-            )}
+            ) : isRenter ? (
+              <Link
+                to="/become-owner"
+                className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+              >
+                <span>🚀 List Vehicle</span>
+              </Link>
+            ) : null}
 
             <Link
               to="/profile"
@@ -254,6 +272,19 @@ export default function Navbar() {
               </span>
             )}
           </Link>
+
+          {isRenter && (
+            <div className="border-t border-slate-100 my-2 pt-2">
+              <Link
+                to="/become-owner"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-emerald-700 bg-emerald-50"
+              >
+                <span>💼</span>
+                <span>Apply to Become an Owner</span>
+              </Link>
+            </div>
+          )}
 
           {isOwner && (
             <>
