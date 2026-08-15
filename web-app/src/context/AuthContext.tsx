@@ -4,13 +4,18 @@ import type { User } from '@supabase/supabase-js';
 
 export type UserRole = 'renter' | 'owner' | 'admin';
 
+// Profile matches the `profiles` table in Supabase.
+// Note: email is NOT in the profiles table — it comes from auth.users and is
+// injected into this type for convenience after fetching.
 export type Profile = {
   id: string;
   role: UserRole;
-  full_name: string;
-  email: string;
-  phone?: string;
-  avatar_url?: string;
+  full_name: string | null;
+  email: string;           // derived from auth user, not stored in profiles
+  phone: string | null;
+  address: string | null;
+  avatar_url: string | null;
+  created_at: string;
 };
 
 type AuthContextType = {
@@ -57,14 +62,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // Get auth user for email (not stored in profiles table)
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, role, full_name, phone, address, avatar_url, created_at')
         .eq('id', userId)
         .single();
 
       if (error) throw error;
-      setProfile(data);
+
+      // Inject email from auth user
+      setProfile({ ...data, email: authUser?.email ?? '' });
     } catch (err) {
       console.error('Error fetching profile:', err);
     } finally {
