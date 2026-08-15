@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import type { Vehicle } from '../../lib/types';
 
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeImg, setActiveImg] = useState(0);
+  const [startingChat, setStartingChat] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -18,7 +21,7 @@ export default function VehicleDetailPage() {
       setLoading(true);
       const { data, error: err } = await supabase
         .from('vehicles')
-        .select('*, profiles(full_name), vehicle_images(id, image_url, display_order)')
+        .select('*, profiles(full_name, phone), vehicle_images(id, image_url, display_order)')
         .eq('id', id)
         .single();
 
@@ -36,6 +39,55 @@ export default function VehicleDetailPage() {
 
     fetchVehicle();
   }, [id]);
+
+  const handleStartChat = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (!vehicle) return;
+
+    if (user.id === vehicle.owner_id) {
+      alert('You are the owner of this vehicle listing.');
+      return;
+    }
+
+    setStartingChat(true);
+
+    try {
+      // 1. Check if conversation already exists
+      const { data: existing, error: findErr } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('vehicle_id', vehicle.id)
+        .eq('renter_id', user.id)
+        .eq('owner_id', vehicle.owner_id)
+        .maybeSingle();
+
+      if (!findErr && existing?.id) {
+        navigate(`/chat/${existing.id}`);
+        return;
+      }
+
+      // 2. Create new conversation
+      const { data: newConv, error: createErr } = await supabase
+        .from('conversations')
+        .insert({
+          vehicle_id: vehicle.id,
+          renter_id: user.id,
+          owner_id: vehicle.owner_id,
+        })
+        .select('id')
+        .single();
+
+      if (createErr) throw createErr;
+      navigate(`/chat/${newConv.id}`);
+    } catch (err: any) {
+      alert('Failed to start chat: ' + err.message);
+    } finally {
+      setStartingChat(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -82,6 +134,8 @@ export default function VehicleDetailPage() {
     { label: 'Year', value: vehicle.year ? `${vehicle.year}` : null, icon: '📅' },
     { label: 'Location', value: vehicle.location, icon: '📍' },
   ].filter((s) => s.value);
+
+  const isOwner = user?.id === vehicle.owner_id;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -149,8 +203,8 @@ export default function VehicleDetailPage() {
 
         {/* Right — Booking Card */}
         <div className="lg:col-span-2">
-          <div className="card sticky top-24">
-            <div className="mb-4">
+          <div className="card sticky top-24 space-y-4">
+            <div>
               <span className={`badge mb-2 ${vehicle.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                 {vehicle.is_available ? '● Available' : '● Unavailable'}
               </span>
@@ -162,25 +216,55 @@ export default function VehicleDetailPage() {
               </p>
             </div>
 
-            <div className="flex items-baseline gap-1 mb-6">
+            <div className="flex items-baseline gap-1 py-2 border-y border-slate-100">
               <span className="text-3xl font-bold text-primary-600">
                 LKR {vehicle.price_per_day.toLocaleString()}
               </span>
               <span className="text-slate-400 text-sm">/ day</span>
             </div>
 
-            {vehicle.is_available ? (
-              <>
+            {isOwner ? (
+              <div className="space-y-2 pt-2">
+                <Link
+                  to={`/edit-vehicle/${vehicle.id}`}
+                  className="btn-primary w-full text-center block"
+                >
+                  ✏️ Edit My Listing
+                </Link>
+                <Link
+                  to="/my-listings"
+                  className="btn-outline w-full text-center block"
+                >
+                  View All Listings
+                </Link>
+              </div>
+            ) : vehicle.is_available ? (
+              <div className="space-y-3 pt-2">
                 <Link
                   to={`/book/${vehicle.id}`}
-                  className="btn-primary w-full text-center block"
+                  className="btn-primary w-full text-center block text-base py-3"
                 >
                   Book Now
                 </Link>
-                <p className="text-center text-xs text-slate-400 mt-3">
+
+                <button
+                  type="button"
+                  onClick={handleStartChat}
+                  disabled={startingChat}
+                  className="btn-outline w-full text-center flex items-center justify-center gap-2"
+                >
+                  {startingChat ? (
+                    <span className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <span>💬</span>
+                  )}
+                  <span>Chat with Owner</span>
+                </button>
+
+                <p className="text-center text-xs text-slate-400">
                   You won't be charged until the owner approves.
                 </p>
-              </>
+              </div>
             ) : (
               <div className="text-center py-3 px-4 bg-red-50 rounded-xl text-sm text-red-600 font-medium">
                 This vehicle is currently unavailable
