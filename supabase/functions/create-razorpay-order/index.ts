@@ -1,17 +1,4 @@
-// =============================================================
-// Supabase Edge Function: create-razorpay-order
-// Runs on Deno. Deployed via: supabase functions deploy create-razorpay-order
-//
-// Required Supabase Secrets (set via Supabase Dashboard → Edge Functions → Secrets):
-//   RAZORPAY_KEY_ID     = rzp_test_xxxxxxxxxxxx
-//   RAZORPAY_KEY_SECRET = your_razorpay_secret_key
-//
-// NOTE: Razorpay natively supports INR. Since this app uses LKR (Sri Lanka),
-// you have two options in production:
-//   1. Convert LKR → INR at current rate before passing `amount`
-//   2. Switch to a local LKR gateway (e.g. PayHere.lk)
-// For testing purposes, the amount is passed as-is in INR paise.
-// =============================================================
+
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
