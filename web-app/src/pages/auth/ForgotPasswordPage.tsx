@@ -24,38 +24,48 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Soft blobs */}
+      <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(147,197,253,0.45) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 w-96 h-96 rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(253,164,175,0.40) 0%, transparent 70%)' }} />
+
+      <div className="w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🔐</div>
-          <h1 className="text-3xl font-bold text-slate-900">Forgot password?</h1>
-          <p className="text-slate-500 mt-1">We'll send a reset link to your email</p>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-3xl"
+            style={{ background: 'linear-gradient(135deg,#dbeafe,#fecdd3)', boxShadow: '0 8px 24px rgba(59,130,246,0.2)' }}>
+            🔐
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 font-heading">Forgot password?</h1>
+          <p className="text-slate-500 mt-1 font-sans">We'll send a reset link to your email</p>
         </div>
 
         <div className="card">
           {sent ? (
-            <div className="text-center py-4">
-              <div className="text-4xl mb-3">📧</div>
-              <h2 className="text-lg font-semibold text-slate-900 mb-1">Check your email</h2>
-              <p className="text-slate-500 text-sm">
-                We sent a password reset link to <span className="font-medium text-slate-700">{email}</span>
+            <div className="text-center py-6">
+              <div className="text-5xl mb-4">📧</div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2 font-heading">Check your inbox</h2>
+              <p className="text-slate-500 text-sm font-sans">
+                We sent a password reset link to{' '}
+                <span className="font-semibold text-slate-700">{email}</span>
               </p>
-              <Link to="/login" className="btn-primary mt-6 inline-block">
+              <Link to="/login" className="btn-primary mt-6 inline-flex">
                 Back to Sign In
               </Link>
             </div>
           ) : (
             <>
               {error && (
-                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-                  {error}
+                <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-medium flex items-center gap-2">
+                  <span>⚠️</span> {error}
                 </div>
               )}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="label" htmlFor="email">Email address</label>
+                  <label className="label" htmlFor="forgot-email">Email Address</label>
                   <input
-                    id="email"
+                    id="forgot-email"
                     type="email"
                     className="input"
                     placeholder="you@example.com"
@@ -67,15 +77,20 @@ export default function ForgotPasswordPage() {
                 <button
                   id="forgot-submit"
                   type="submit"
-                  className="btn-primary w-full"
+                  className="btn-primary w-full py-3 text-base"
                   disabled={loading}
                 >
-                  {loading ? 'Sending...' : 'Send Reset Link'}
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Sending…
+                    </span>
+                  ) : 'Send Reset Link'}
                 </button>
               </form>
-              <p className="text-center text-sm text-slate-500 mt-6">
+              <p className="text-center text-sm text-slate-500 mt-6 font-sans">
                 Remember your password?{' '}
-                <Link to="/login" className="text-primary-600 font-semibold hover:underline">
+                <Link to="/login" className="text-primary-600 font-bold hover:underline">
                   Sign in
                 </Link>
               </p>
