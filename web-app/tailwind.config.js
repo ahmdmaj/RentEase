@@ -19,12 +19,22 @@ export default {
           800: '#1e40af',
           900: '#1e3a8a',
         },
+        'ice-blue': '#dbeafe',
+        'ice-red':  '#fecdd3',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans:    ['Plus Jakarta Sans', 'sans-serif'],
+        heading: ['Outfit', 'sans-serif'],
+        display: ['DM Serif Display', 'Georgia', 'serif'],
       },
       boxShadow: {
-        card: '0 4px 24px rgba(37, 99, 235, 0.08)',
+        card:   '0 4px 24px rgba(37, 99, 235, 0.08)',
+        glow:   '0 8px 24px -4px rgba(37, 99, 235, 0.35)',
+        'glow-red': '0 8px 24px -4px rgba(244, 63, 94, 0.30)',
+      },
+      backgroundImage: {
+        'page-gradient':
+          'linear-gradient(135deg, #dbeafe 0%, #eff6ff 22%, #f8fafc 50%, #fff1f2 78%, #fecdd3 100%)',
       },
     },
   },
