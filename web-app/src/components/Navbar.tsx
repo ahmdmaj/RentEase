@@ -28,7 +28,7 @@ const icons = {
 };
 
 export default function Navbar() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -83,10 +83,7 @@ export default function Navbar() {
     };
   }, [user, location.pathname]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-  };
+
 
   const isActive = (path: string) =>
     location.pathname === path
@@ -182,12 +179,7 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Sign out (desktop) */}
-            <button onClick={handleSignOut}
-              className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 px-3 py-2 rounded-xl transition-all duration-150">
-              <Svg d={icons.signout} size={14} />
-              <span className="hidden lg:inline">Sign Out</span>
-            </button>
+
 
             {/* Mobile hamburger */}
             <button
@@ -228,12 +220,7 @@ export default function Navbar() {
 
           <div className="border-t border-slate-100 pt-2 mt-1">
             <MobileLink to="/profile" icon={<Svg d={icons.profile} size={16} />} label="My Profile" onClick={() => setMobileMenuOpen(false)} isActive={isActive('/profile')} />
-            <button
-              onClick={handleSignOut}
-              className="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-              <Svg d={icons.signout} size={16} />
-              Sign Out
-            </button>
+
           </div>
         </div>
       )}
