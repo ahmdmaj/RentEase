@@ -119,79 +119,83 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* ── Desktop nav ── */}
-          <div className="hidden md:flex items-center gap-0.5">
-            <NavItem to="/" icon={<Svg d={icons.browse} size={15} />} label="Browse" isActive={isActive('/')} />
-            <NavItem to="/my-bookings" icon={<Svg d={icons.bookings} size={15} />} label="My Bookings" isActive={isActive('/my-bookings')} />
-            <NavItem
-              to="/messages"
-              icon={<Svg d={icons.messages} size={15} />}
-              label="Messages"
-              isActive={isActive('/messages')}
-              badge={<Badge count={unreadMessages} />}
-            />
-
-
-            {isOwner && (
-              <>
-                <div className="h-4 w-px bg-slate-200 mx-1" />
-                <NavItem to="/my-listings"    icon={<Svg d={icons.listings}  size={15} />} label="My Listings"    isActive={isActive('/my-listings')} />
-                <NavItem to="/owner-bookings" icon={<Svg d={icons.requests}  size={15} />} label="Requests"       isActive={isActive('/owner-bookings')} />
-              </>
-            )}
-
-            {isRenter && (
+          {/* ── Right Side Group ── */}
+          <div className="flex items-center">
+            
+            {/* ── Desktop nav ── */}
+            <div className="hidden md:flex items-center gap-3">
+              <NavItem to="/" icon={<Svg d={icons.browse} size={15} />} label="Browse" isActive={isActive('/')} />
+              <NavItem to="/my-bookings" icon={<Svg d={icons.bookings} size={15} />} label="My Bookings" isActive={isActive('/my-bookings')} />
               <NavItem
-                to="/become-owner"
-                icon={<Svg d={icons.owner} size={15} />}
-                label="Become an Owner"
-                isActive={location.pathname === '/become-owner' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'text-emerald-700 hover:bg-emerald-50'}
+                to="/messages"
+                icon={<Svg d={icons.messages} size={15} />}
+                label="Messages"
+                isActive={isActive('/messages')}
+                badge={<Badge count={unreadMessages} />}
               />
-            )}
-          </div>
 
-          {/* ── Right actions ── */}
-          <div className="flex items-center gap-2">
-            {/* Notification Icon */}
-            <Link to="/notifications"
-              className="relative p-2 text-slate-600 hover:text-primary-700 hover:bg-slate-100 rounded-full transition-colors flex items-center justify-center">
-              <Svg d={icons.bell} size={20} />
-              {unreadNotifications > 0 && (
-                <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[16px] h-[16px] text-[9px] font-bold text-white bg-red-500 rounded-full border-[1.5px] border-white">
-                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                </span>
+              {isOwner && (
+                <>
+                  <div className="h-5 w-px bg-slate-200 mx-2" />
+                  <NavItem to="/my-listings"    icon={<Svg d={icons.listings}  size={15} />} label="My Listings"    isActive={isActive('/my-listings')} />
+                  <NavItem to="/owner-bookings" icon={<Svg d={icons.requests}  size={15} />} label="Requests"       isActive={isActive('/owner-bookings')} />
+                </>
               )}
-            </Link>
 
-            {isOwner && (
-              <Link to="/add-vehicle"
-                className="hidden sm:inline-flex items-center gap-1.5 btn-primary text-sm py-2 px-4">
-                <Svg d={icons.plus} size={14} />
-                Add Vehicle
+              {isRenter && (
+                <NavItem
+                  to="/become-owner"
+                  icon={<Svg d={icons.owner} size={15} />}
+                  label="Become an Owner"
+                  isActive={location.pathname === '/become-owner' ? 'text-emerald-700 bg-emerald-50 font-semibold' : 'text-emerald-700 hover:bg-emerald-50'}
+                />
+              )}
+            </div>
+
+            {/* Separator */}
+            <div className="hidden md:block h-8 w-px bg-slate-200 mx-6"></div>
+
+            {/* ── Right actions ── */}
+            <div className="flex items-center gap-4">
+              {/* Notification Icon */}
+              <Link to="/notifications"
+                className="relative p-2 text-slate-600 hover:text-primary-700 hover:bg-slate-100 rounded-full transition-colors flex items-center justify-center">
+                <Svg d={icons.bell} size={20} />
+                {unreadNotifications > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[16px] h-[16px] text-[9px] font-bold text-white bg-red-500 rounded-full border-[1.5px] border-white">
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  </span>
+                )}
               </Link>
-            )}
 
-            {/* Profile avatar */}
-            <Link to="/profile"
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-primary-50 border border-transparent hover:border-primary-200 transition-all duration-150">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-sm"
-                style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)' }}>
-                {initials}
-              </div>
-              <span className="text-xs font-semibold text-slate-700 hidden sm:block max-w-[90px] truncate font-heading">
-                {profile?.full_name?.split(' ')[0] ?? 'Profile'}
-              </span>
-            </Link>
+              {isOwner && (
+                <Link to="/add-vehicle"
+                  className="hidden sm:inline-flex items-center gap-1.5 btn-primary text-sm py-2 px-4">
+                  <Svg d={icons.plus} size={14} />
+                  Add Vehicle
+                </Link>
+              )}
 
+              {/* Profile avatar */}
+              <Link to="/profile"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-primary-50 border border-transparent hover:border-primary-200 transition-all duration-150">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-sm"
+                  style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)' }}>
+                  {initials}
+                </div>
+                <span className="text-xs font-semibold text-slate-700 hidden sm:block max-w-[90px] truncate font-heading">
+                  {profile?.full_name?.split(' ')[0] ?? 'Profile'}
+                </span>
+              </Link>
 
-
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen((p) => !p)}
-              className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
-              aria-label="Toggle Menu">
-              <Svg d={mobileMenuOpen ? icons.close : icons.menu} size={20} />
-            </button>
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setMobileMenuOpen((p) => !p)}
+                className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
+                aria-label="Toggle Menu">
+                <Svg d={mobileMenuOpen ? icons.close : icons.menu} size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
