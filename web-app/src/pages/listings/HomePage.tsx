@@ -143,16 +143,24 @@ export default function HomePage() {
         <p className="page-subtitle">Find the perfect vehicle for your next trip</p>
       </div>
 
-      {/* Search & Filter Bar */}
-      <form onSubmit={handleSearch} className="card mb-6 flex flex-col sm:flex-row gap-3">
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} className="mb-8 relative flex items-center w-full bg-white shadow-sm hover:shadow-md transition-all duration-300 border border-slate-200 rounded-full p-1.5 focus-within:border-primary-400 focus-within:ring-4 focus-within:ring-primary-50">
+        <div className="pl-4 pr-2 text-slate-400 flex items-center pointer-events-none">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
         <input
           type="text"
-          placeholder="🔍  Search by make, model or city..."
-          className="input flex-1"
+          placeholder="Search by make, model or city..."
+          className="flex-1 bg-transparent border-none text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0 text-base sm:text-lg h-12 px-2"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button type="submit" className="btn-primary sm:w-28">Search</button>
+        <button type="submit" className="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold h-12 px-8 rounded-full transition-colors flex-shrink-0 ml-2 shadow-sm">
+          Search
+        </button>
       </form>
 
       {/* Type Filter Pills */}
