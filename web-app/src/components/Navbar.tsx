@@ -131,13 +131,7 @@ export default function Navbar() {
               isActive={isActive('/messages')}
               badge={<Badge count={unreadMessages} />}
             />
-            <NavItem
-              to="/notifications"
-              icon={<Svg d={icons.bell} size={15} />}
-              label="Notifications"
-              isActive={isActive('/notifications')}
-              badge={<Badge count={unreadNotifications} red />}
-            />
+
 
             {isOwner && (
               <>
@@ -159,6 +153,17 @@ export default function Navbar() {
 
           {/* ── Right actions ── */}
           <div className="flex items-center gap-2">
+            {/* Notification Icon */}
+            <Link to="/notifications"
+              className="relative p-2 text-slate-600 hover:text-primary-700 hover:bg-slate-100 rounded-full transition-colors flex items-center justify-center">
+              <Svg d={icons.bell} size={20} />
+              {unreadNotifications > 0 && (
+                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-[16px] text-[10px] font-bold text-white bg-red-500 rounded-full px-1 border-2 border-white box-content">
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              )}
+            </Link>
+
             {isOwner && (
               <Link to="/add-vehicle"
                 className="hidden sm:inline-flex items-center gap-1.5 btn-primary text-sm py-2 px-4">
