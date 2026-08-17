@@ -158,7 +158,7 @@ export default function Navbar() {
               className="relative p-2 text-slate-600 hover:text-primary-700 hover:bg-slate-100 rounded-full transition-colors flex items-center justify-center">
               <Svg d={icons.bell} size={20} />
               {unreadNotifications > 0 && (
-                <span className="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-[16px] text-[10px] font-bold text-white bg-red-500 rounded-full px-1 border-2 border-white box-content">
+                <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[16px] h-[16px] text-[9px] font-bold text-white bg-red-500 rounded-full border-[1.5px] border-white">
                   {unreadNotifications > 9 ? '9+' : unreadNotifications}
                 </span>
               )}
