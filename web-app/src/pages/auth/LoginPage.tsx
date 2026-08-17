@@ -44,10 +44,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Soft blobs */}
-      <div className="pointer-events-none absolute -top-32 -left-32 w-96 h-96 rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(147,197,253,0.45) 0%, transparent 70%)' }} />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 w-96 h-96 rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(253,164,175,0.40) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute -top-40 -left-40 w-[800px] h-[800px] rounded-full blur-[100px] z-0"
+        style={{ background: 'radial-gradient(circle, rgba(147,197,253,0.5) 0%, transparent 70%)' }} />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 w-[800px] h-[800px] rounded-full blur-[100px] z-0"
+        style={{ background: 'radial-gradient(circle, rgba(253,164,175,0.45) 0%, transparent 70%)' }} />
 
       <div className="w-full max-w-md animate-fade-up">
         {/* Header */}
