@@ -113,9 +113,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-            <span className="text-2xl transition-transform duration-200 group-hover:scale-110">🚗</span>
-            <span className="font-heading text-xl font-black text-slate-900 tracking-tight leading-none">
+          <Link to="/" className="flex items-center flex-shrink-0 group">
+            <span className="font-heading text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none transition-transform duration-200 group-hover:scale-[1.02]">
               Rent<span className="text-primary-600">Ease</span>
             </span>
           </Link>
