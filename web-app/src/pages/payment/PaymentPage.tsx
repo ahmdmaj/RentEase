@@ -61,7 +61,7 @@ export default function PaymentPage() {
       const transactionId = `TXN_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
       // 1. Insert payment record into payments table
-      const { data: paymentData, error: payErr } = await supabase
+      const { error: payErr } = await supabase
         .from('payments')
         .insert({
           booking_id: booking.id,

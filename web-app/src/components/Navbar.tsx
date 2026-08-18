@@ -29,7 +29,6 @@ const icons = {
 
 export default function Navbar() {
   const { user, profile } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [unreadNotifications, setUnreadNotifications] = useState(0);
