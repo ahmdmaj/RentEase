@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import type { Vehicle } from '../../lib/types';
 
-const VEHICLE_TYPES = ['All', 'Car', 'Bike', 'Scooter', 'SUV'];
+const VEHICLE_TYPES = ['All', 'Car', 'Bike', 'Scooter', 'SUV', 'Van'];
 
 function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   const thumb = vehicle.vehicle_images?.[0]?.image_url ?? null;
@@ -114,6 +114,10 @@ export default function HomePage() {
       query = query.or(`make.ilike.%${search.trim()}%,model.ilike.%${search.trim()}%,location.ilike.%${search.trim()}%`);
     }
 
+    if (typeFilter !== 'All') {
+      query = query.eq('vehicle_type', typeFilter);
+    }
+
     const { data, error: err } = await query;
 
     if (err) {
@@ -123,12 +127,6 @@ export default function HomePage() {
     }
 
     let results = (data ?? []) as Vehicle[];
-
-    // Client-side type filter (vehicles table has no "type" column — we filter by make/model pattern if needed)
-    // For now, type filter is a placeholder for future vehicle_type column
-    if (typeFilter !== 'All') {
-      // Future: filter by vehicle_type column once added
-    }
 
     // Sort images by display_order safely without mutating the original array
     results = results.map((v) => ({

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const FUEL_TYPES = ['Petrol', 'Diesel', 'Hybrid', 'Electric'];
 const TRANSMISSIONS = ['Automatic', 'Manual'];
+const VEHICLE_TYPES = ['Car', 'Bike', 'Scooter', 'SUV', 'Van'];
 
 export default function AddVehiclePage() {
   const { user } = useAuth();
@@ -14,6 +15,7 @@ export default function AddVehiclePage() {
   const [form, setForm] = useState({
     make: '',
     model: '',
+    vehicle_type: '',
     year: '',
     transmission: '',
     fuel_type: '',
@@ -56,6 +58,7 @@ export default function AddVehiclePage() {
         owner_id: user.id,
         make: form.make.trim(),
         model: form.model.trim(),
+        vehicle_type: form.vehicle_type || null,
         year: form.year ? parseInt(form.year) : null,
         transmission: form.transmission || null,
         fuel_type: form.fuel_type || null,
@@ -136,9 +139,19 @@ export default function AddVehiclePage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <label className="label" htmlFor="vehicle_type">Category <span className="text-red-500">*</span></label>
+              <select id="vehicle_type" className="input" value={form.vehicle_type} onChange={set('vehicle_type')} required>
+                <option value="">Select...</option>
+                {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="label" htmlFor="year">Year</label>
               <input id="year" type="number" className="input" placeholder="e.g. 2021" min="1990" max={new Date().getFullYear()} value={form.year} onChange={set('year')} />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label" htmlFor="seating_capacity">Seats</label>
               <input id="seating_capacity" type="number" className="input" placeholder="e.g. 5" min="1" max="50" value={form.seating_capacity} onChange={set('seating_capacity')} />

@@ -25,6 +25,7 @@ export type Vehicle = {
   owner_id: string;
   make: string;
   model: string;
+  vehicle_type: string | null;
   year: number | null;
   transmission: 'Automatic' | 'Manual' | null;
   fuel_type: 'Petrol' | 'Diesel' | 'Hybrid' | 'Electric' | null;
