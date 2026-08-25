@@ -17,21 +17,23 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
       {/* Thumbnail */}
       <div className="h-44 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden rounded-t-2xl">
         {thumb ? (
-          <img
-            src={thumb}
-            alt={`${vehicle.make} ${vehicle.model}`}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              if (e.currentTarget.nextElementSibling) {
-                (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
-              }
-            }}
-          />
-          <div className="w-full h-full items-center justify-center hidden" style={{ display: 'none' }}>
-            <span className="text-4xl font-bold text-slate-300">{initials}</span>
-          </div>
+          <>
+            <img
+              src={thumb}
+              alt={`${vehicle.make} ${vehicle.model}`}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextElementSibling) {
+                  (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                }
+              }}
+            />
+            <div className="w-full h-full items-center justify-center hidden" style={{ display: 'none' }}>
+              <span className="text-4xl font-bold text-slate-300">{initials}</span>
+            </div>
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-4xl font-bold text-slate-300">{initials}</span>
