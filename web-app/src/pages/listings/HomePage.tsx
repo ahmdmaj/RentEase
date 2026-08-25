@@ -21,7 +21,17 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
             src={thumb}
             alt={`${vehicle.make} ${vehicle.model}`}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              if (e.currentTarget.nextElementSibling) {
+                (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+              }
+            }}
           />
+          <div className="w-full h-full items-center justify-center hidden" style={{ display: 'none' }}>
+            <span className="text-4xl font-bold text-slate-300">{initials}</span>
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-4xl font-bold text-slate-300">{initials}</span>
@@ -95,7 +105,8 @@ export default function HomePage() {
       .from('vehicles')
       .select('*, vehicle_images(id, image_url, display_order)')
       .eq('is_available', true)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(24);
 
     if (search.trim()) {
       query = query.or(`make.ilike.%${search.trim()}%,model.ilike.%${search.trim()}%,location.ilike.%${search.trim()}%`);
@@ -117,10 +128,12 @@ export default function HomePage() {
       // Future: filter by vehicle_type column once added
     }
 
-    // Sort images by display_order
+    // Sort images by display_order safely without mutating the original array
     results = results.map((v) => ({
       ...v,
-      vehicle_images: v.vehicle_images?.sort((a, b) => a.display_order - b.display_order),
+      vehicle_images: Array.isArray(v.vehicle_images) 
+        ? [...v.vehicle_images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+        : [],
     }));
 
     setVehicles(results);
@@ -128,7 +141,14 @@ export default function HomePage() {
   }, [search, typeFilter]);
 
   useEffect(() => {
-    fetchVehicles();
+    // Wrap in try-catch to ensure loading state is reset on unexpected errors
+    try {
+      fetchVehicles();
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+      setError('An unexpected error occurred.');
+    }
   }, [fetchVehicles]);
 
   const handleSearch = (e: React.FormEvent) => {
