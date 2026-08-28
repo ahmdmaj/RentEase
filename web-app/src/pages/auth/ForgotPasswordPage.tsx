@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import logoUrl from '../../assets/LOGO-removebg-preview.jpg';
+import logoUrl from '../../assets/LOGO-removebg-preview.png';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
