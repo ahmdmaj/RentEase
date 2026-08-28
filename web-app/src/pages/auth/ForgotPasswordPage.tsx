@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import logoUrl from '../../assets/LOGO-removebg-preview.jpg';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -33,9 +34,8 @@ export default function ForgotPasswordPage() {
 
       <div className="w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-3xl"
-            style={{ background: 'linear-gradient(135deg,#dbeafe,#fecdd3)', boxShadow: '0 8px 24px rgba(59,130,246,0.2)' }}>
-            🔐
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg overflow-hidden bg-white">
+            <img src={logoUrl} alt="RentEase Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 font-heading">Forgot password?</h1>
           <p className="text-slate-500 mt-1 font-sans">We'll send a reset link to your email</p>
