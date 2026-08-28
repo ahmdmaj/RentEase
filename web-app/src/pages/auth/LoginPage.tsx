@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logoUrl from '../../assets/LOGO-removebg-preview.jpg';
 
 const EyeIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -52,9 +53,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md animate-fade-up">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 text-3xl"
-            style={{ background: 'linear-gradient(135deg,#dbeafe,#fecdd3)', boxShadow: '0 8px 24px rgba(59,130,246,0.2)' }}>
-            🚗
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg overflow-hidden bg-white">
+            <img src={logoUrl} alt="RentEase Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 font-heading">Welcome back</h1>
           <p className="text-slate-500 mt-1 font-sans">Sign in to your RentEase account</p>
