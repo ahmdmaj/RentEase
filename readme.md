@@ -125,11 +125,41 @@ cd web-app && npm run dev
 cd web-admin && npm run dev
 ```
 
+
 ---
 
-## 🔑 Demo Credentials
+## 🧪 Running Tests
 
-To evaluate the platform immediately without going through the signup flow, use the following seeded accounts. **The password for all accounts is `password123`.**
+The web application includes a unit test suite that validates the core business rules — mirroring the exact logic enforced by the database RPC and triggers.
+
+```bash
+cd web-app
+
+# Run all tests once (CI mode)
+npm test
+
+# Watch mode (development)
+npm run test:watch
+```
+
+**Test coverage:**
+
+| Suite | What is tested |
+| :--- | :--- |
+| `calculateBookingPrice` | Server-side price formula `(end - start) × price_per_day` |
+| `validateBookingDates` | Past dates, same-day, reversed-date rejection |
+| `isTransitionAllowed (renter)` | Cannot approve, reject, or complete bookings |
+| `isTransitionAllowed (owner)` | Cannot complete before rental end date; IDOR check |
+| `isTransitionAllowed (admin)` | Admin also blocked from early completion |
+
+**Latest result:** `22 passed / 0 failed`
+
+---
+
+
+
+## 🔑 Demo Credentials
+ without going through the signup flow, use the following seeded accounts. **The password for all accounts is `password123`.**
 
 | Role | Email | Description |
 | :--- | :--- | :--- |
