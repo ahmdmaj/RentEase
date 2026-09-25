@@ -20,6 +20,15 @@ import { Ionicons } from '@expo/vector-icons';
 import DropdownPicker from '../../components/DropdownPicker';
 import { VEHICLE_MAKES, VEHICLE_MODELS, SRI_LANKA_DISTRICTS } from '../../constants/vehicleData';
 
+const generateUUID = () => {
+    let dt = new Date().getTime();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+};
+
 export default function AddVehicleScreen({ navigation }: any) {
     const insets = useSafeAreaInsets();
     const { user } = useAuthStore();
@@ -77,9 +86,9 @@ export default function AddVehicleScreen({ navigation }: any) {
             for (let i = 0; i < images.length; i++) {
                 const uri = images[i];
 
-                // Generate a unique file name (using timestamp to avoid conflicts)
+                // Generate a unique file name using UUID to prevent overwrite/collision attacks
                 const fileExt = uri.split('.').pop();
-                const fileName = `${Date.now()}-${i}.${fileExt}`;
+                const fileName = `${generateUUID()}.${fileExt}`;
                 const filePath = `${vehicleId}/${fileName}`; // Store in a folder named after the vehicle
 
                 // Get current auth token for upload
@@ -109,8 +118,7 @@ export default function AddVehicleScreen({ navigation }: any) {
 
                 if (uploadResult.status !== 200) {
                     console.error('[DEBUG-UPLOAD] Upload error for image', i, uploadResult);
-                    const errorResponse = JSON.parse(uploadResult.body || '{}');
-                    Alert.alert('Upload Failed', `Image ${i + 1} failed: ${errorResponse.message || uploadResult.body || 'Unknown error'}`);
+                    Alert.alert('Upload Failed', `Image ${i + 1} failed to upload. Please try again with a valid image under 5MB.`);
                     return false;
                 }
 
@@ -133,7 +141,7 @@ export default function AddVehicleScreen({ navigation }: any) {
 
                 if (dbError) {
                     console.error('[DEBUG-UPLOAD] DB insert error for image', i, dbError);
-                    Alert.alert('DB Error', `Failed to save image ${i + 1}: ${dbError.message}`);
+                    Alert.alert('Error', `Failed to save image ${i + 1}. Please try again.`);
                     return false;
                 }
                 
@@ -182,7 +190,7 @@ export default function AddVehicleScreen({ navigation }: any) {
 
         if (vehicleError) {
             setLoading(false);
-            Alert.alert('Error', vehicleError.message);
+            Alert.alert('Error', 'Failed to create vehicle listing. Please try again.');
             return;
         }
 
