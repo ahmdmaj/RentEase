@@ -54,7 +54,7 @@ export default function VehicleDetailScreen({ route, navigation }: any) {
             setImages(imageData.map((img) => img.image_url));
 
         } catch (error: any) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } finally {
             setLoading(false);
         }

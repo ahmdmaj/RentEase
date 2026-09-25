@@ -44,7 +44,7 @@ export default function MyListingsScreen({ navigation }: any) {
             .order('created_at', { ascending: false });
 
         if (vehiclesRes.error) {
-            Alert.alert('Error', vehiclesRes.error.message);
+            Alert.alert('Error', 'An error occurred while fetching vehicles.');
             setLoading(false);
             setRefreshing(false);
             return;

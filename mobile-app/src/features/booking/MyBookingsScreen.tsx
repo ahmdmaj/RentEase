@@ -52,7 +52,7 @@ export default function MyBookingsScreen({ navigation }: any) {
             .order('created_at', { ascending: false });
 
         if (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } else {
             setBookings(data || []);
         }
@@ -86,7 +86,7 @@ export default function MyBookingsScreen({ navigation }: any) {
                             .eq('renter_id', user?.id);
 
                         if (error) {
-                            Alert.alert('Error', error.message);
+                            Alert.alert('Error', 'An error occurred while processing your request.');
                         } else {
                             Alert.alert('Success', 'Booking cancelled successfully.');
                             fetchMyBookings();

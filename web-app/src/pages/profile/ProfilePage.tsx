@@ -25,7 +25,7 @@ export default function ProfilePage() {
       .eq('id', profile!.id);
 
     if (error) {
-      setSaveError(error.message);
+      setSaveError('An error occurred while saving.');
     } else {
       await refreshProfile();
       setSaveMsg('Profile updated successfully!');

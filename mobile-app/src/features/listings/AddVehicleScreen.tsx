@@ -150,7 +150,7 @@ export default function AddVehicleScreen({ navigation }: any) {
             return true;
         } catch (error: any) {
             console.error('[DEBUG-UPLOAD] Catch block triggered:', error);
-            Alert.alert('Upload Error', error.message);
+            Alert.alert('Upload Error', 'An error occurred during upload.');
             return false;
         }
     };

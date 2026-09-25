@@ -86,7 +86,7 @@ export default function EditVehicleScreen({ route, navigation }: any) {
                 setIsAvailable(data.is_available);
             }
         } catch (error: any) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } finally {
             setLoading(false);
         }
@@ -128,7 +128,7 @@ export default function EditVehicleScreen({ route, navigation }: any) {
         setSaving(false);
 
         if (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } else {
             Alert.alert('Success', 'Vehicle updated successfully!');
             navigation.goBack();
@@ -156,7 +156,7 @@ export default function EditVehicleScreen({ route, navigation }: any) {
                         setDeleting(false);
 
                         if (error) {
-                            Alert.alert('Error', error.message);
+                            Alert.alert('Error', 'An error occurred while processing your request.');
                         } else {
                             Alert.alert('Success', 'Vehicle deleted successfully.');
                             navigation.navigate('Home');

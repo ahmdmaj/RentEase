@@ -30,7 +30,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
         setLoading(false);
 
         if (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } else {
             Alert.alert(
                 'Check Your Email',

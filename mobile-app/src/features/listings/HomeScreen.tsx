@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }: any) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', 'An error occurred while processing your request.');
     } else {
       setVehicles(data || []);
       setFilteredVehicles(data || []);

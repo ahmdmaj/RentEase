@@ -72,7 +72,7 @@ export default function BookingScreen({ route, navigation }: any) {
 
             if (overlapError) {
                 setLoading(false);
-                Alert.alert('Error checking availability', overlapError.message);
+                Alert.alert('Error checking availability', 'Unable to verify dates at this time.');
                 return;
             }
 
@@ -100,7 +100,7 @@ export default function BookingScreen({ route, navigation }: any) {
 
             if (insertError) {
                 // If RPC or DB trigger throws an error, format nicely
-                Alert.alert('Booking Error', insertError.message || 'Failed to submit booking.');
+                Alert.alert('Booking Error', 'Failed to submit booking. Please try again.');
                 return;
             }
 

@@ -56,7 +56,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
             .order('created_at', { ascending: false });
 
         if (error) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } else {
             setBookings(data || []);
         }
@@ -92,7 +92,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
 
                         if (error) {
                             console.error('Booking update error:', JSON.stringify(error));
-                            Alert.alert('Error', error.message || 'Failed to update booking. Check RLS policies.');
+                            Alert.alert('Error', 'Failed to update booking.');
                         } else if (!data || data.length === 0) {
                             Alert.alert('Error', 'Update failed — you may not have permission to update this booking. Please check Supabase RLS policies.');
                         } else {
@@ -123,7 +123,7 @@ export default function OwnerBookingsScreen({ navigation }: any) {
 
                         if (error) {
                             console.error('Complete booking error:', JSON.stringify(error));
-                            Alert.alert('Error', error.message || 'Failed to complete booking.');
+                            Alert.alert('Error', 'Failed to complete booking.');
                         } else if (!data || data.length === 0) {
                             Alert.alert('Error', 'Update failed — RLS may be blocking this. Check Supabase policies.');
                         } else {

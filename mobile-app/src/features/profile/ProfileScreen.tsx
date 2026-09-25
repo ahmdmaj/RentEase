@@ -42,7 +42,7 @@ export default function ProfileScreen({ navigation }: any) {
             setPhone(data?.phone || '');
             setRole(data?.role || 'renter');
         } catch (error: any) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } finally {
             setLoading(false);
         }
@@ -66,7 +66,7 @@ export default function ProfileScreen({ navigation }: any) {
 
             Alert.alert('Success', 'Profile updated successfully!');
         } catch (error: any) {
-            Alert.alert('Error', error.message);
+            Alert.alert('Error', 'An error occurred while processing your request.');
         } finally {
             setSaving(false);
         }
