@@ -30,10 +30,32 @@ RentEase is structured as a modern monorepo, separating concerns across dedicate
 
 RentEase was engineered with a "zero-trust client" philosophy. The UI hides features, but the **database enforces security**.
 
+### 🛡️ Core Security Pipeline
+```text
+Supabase Auth  →  PostgreSQL RLS  →  Database Triggers  →  Secure RPC  →  Database Constraints
+```
+
 - **Strict Row Level Security (RLS)**: Enforces multi-role authorization (Admin, Owner, Renter) directly at the database layer. Users cannot elevate their privileges or tamper with other users' profiles.
-- **Concurrency & Double-Booking Prevention**: Utilizes advanced PostgreSQL `EXCLUDE USING gist` constraints on date ranges to mathematically guarantee that a vehicle cannot be double-booked for overlapping approved dates.
-- **Secure RPC Transactions**: The booking engine drops permissive `INSERT` policies entirely. All bookings route through a `SECURITY DEFINER` RPC (`check_and_create_booking`) which securely calculates pricing on the backend, preventing client-side price manipulation and enforcing initial state immutability.
+- **Double-Submission Protection**: The booking RPC explicitly counts matching pending requests and rejects spam to prevent users from accidently double-booking the same vehicle and dates.
 - **Protected Storage Policies**: Vehicle image uploads are locked down. Supabase Storage bucket policies explicitly cross-reference the `public.vehicles` table to prevent arbitrary file uploads, path traversal, and malicious file hosting.
+
+### 📅 Booking Integrity
+- **Server-Side Price Calculation**: The booking engine drops permissive `INSERT` policies entirely. All bookings route through a `SECURITY DEFINER` RPC (`check_and_create_booking`) which securely calculates pricing on the backend, preventing client-side price manipulation.
+- **Date Validation**: The RPC enforces strict chronological constraints (`start_date < end_date` and `start_date >= CURRENT_DATE`) to guarantee mathematically impossible or negative-duration bookings cannot enter the system.
+- **Concurrency & Double-Booking Prevention**: Utilizes advanced PostgreSQL `EXCLUDE USING gist` constraints on date ranges to mathematically guarantee that a vehicle cannot be double-booked for overlapping approved dates.
+- **State Transition Guardrails**: Database triggers block illegal state transitions. For example, an owner cannot manually force an active booking to `completed` before the rental period ends, preventing a bypass of the `gist` double-booking constraint.
+
+### 🚗 Vehicle Lifecycle (Soft Deletion)
+```text
+Active Vehicle  →  Owner removes listing  →  Inactive Vehicle  →  Historical bookings preserved
+```
+Vehicles cannot be hard-deleted if they have historical records. Instead, they are marked `is_active = false`, hiding them from search and preventing new bookings, while perfectly preserving historical financial and rental data.
+
+### 🖼️ Storage Mechanism
+- **Public Bucket**: Vehicle images are intended for marketplace browsing and are public.
+- **Owner-Only Uploads**: Only the authenticated owner of a vehicle record can upload, modify, or delete its images.
+- **Restrictions**: 5MB size limit, restricted exclusively to image MIME types (JPEG, PNG, WEBP).
+- **UUID Filenames**: Images are generated with UUIDv4 filenames to prevent predictable enumeration or collisions.
 
 ---
 

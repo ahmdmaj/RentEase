@@ -98,17 +98,26 @@ export default function HomePage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [error, setError] = useState('');
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchVehicles = useCallback(async () => {
-    setLoading(true);
+  const PAGE_SIZE = 12;
+
+  const fetchVehicles = useCallback(async (reset = false) => {
+    if (reset) setLoading(true);
+    else setLoadingMore(true);
+    
     setError('');
+    const currentPage = reset ? 0 : page;
 
     let query = supabase
       .from('vehicles')
       .select('*, vehicle_images(id, image_url, display_order)')
       .eq('is_available', true)
+      .eq('is_active', true)
       .order('created_at', { ascending: false })
-      .limit(24);
+      .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
 
     if (search.trim()) {
       query = query.or(`make.ilike.%${search.trim()}%,model.ilike.%${search.trim()}%,location.ilike.%${search.trim()}%`);
@@ -136,14 +145,24 @@ export default function HomePage() {
         : [],
     }));
 
-    setVehicles(results);
+    if (reset) {
+      setVehicles(results);
+    } else {
+      setVehicles(prev => [...prev, ...results]);
+    }
+    
+    setHasMore(results.length === PAGE_SIZE);
+    if (!reset) setPage(currentPage + 1);
+    else setPage(1);
+
     setLoading(false);
-  }, [search, typeFilter]);
+    setLoadingMore(false);
+  }, [search, typeFilter, page]);
 
   useEffect(() => {
     // Wrap in try-catch to ensure loading state is reset on unexpected errors
     try {
-      fetchVehicles();
+      fetchVehicles(true);
     } catch (e) {
       console.error(e);
       setLoading(false);
@@ -153,7 +172,7 @@ export default function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchVehicles();
+    fetchVehicles(true);
   };
 
   return (
@@ -228,10 +247,21 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <p className="text-sm text-slate-400 mb-4">{vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} available</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <p className="text-sm text-slate-400 mb-4">{vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} loaded</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {vehicles.map((v) => <VehicleCard key={v.id} vehicle={v} />)}
           </div>
+          {hasMore && (
+            <div className="flex justify-center mb-12">
+              <button 
+                onClick={() => fetchVehicles(false)} 
+                disabled={loadingMore}
+                className="btn-outline px-8 py-2.5"
+              >
+                {loadingMore ? 'Loading...' : 'Load More'}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
