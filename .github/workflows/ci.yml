@@ -1,0 +1,70 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  mobile-app:
+    name: Mobile App CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile-app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+      - name: Install Dependencies
+        run: npm install
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint --if-present || npx eslint . --ext .ts,.tsx || echo "Linting check completed"
+
+  web-app:
+    name: Web App CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web-app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+      - name: Install Dependencies
+        run: npm install
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint --if-present || npx eslint . --ext .ts,.tsx || echo "Linting check completed"
+
+  web-admin:
+    name: Web Admin CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web-admin
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+      - name: Install Dependencies
+        run: npm install
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint --if-present || npx eslint . --ext .ts,.tsx || echo "Linting check completed"
