@@ -223,7 +223,7 @@ export default function HomePage() {
       {error && (
         <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm flex items-center gap-2">
           <span>⚠️</span> {error}
-          <button onClick={fetchVehicles} className="ml-auto text-red-500 underline text-xs">Retry</button>
+          <button onClick={() => fetchVehicles(true)} className="ml-auto text-red-500 underline text-xs">Retry</button>
         </div>
       )}
 
