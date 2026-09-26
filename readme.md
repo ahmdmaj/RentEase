@@ -159,7 +159,7 @@ npm run test:watch
 
 
 ## 🔑 Demo Credentials
- without going through the signup flow, use the following seeded accounts. **The password for all accounts is `password123`.**
+To evaluate the platform immediately without going through the signup flow, use the following seeded accounts. **The password for all accounts is `password123`.**
 
 | Role | Email | Description |
 | :--- | :--- | :--- |
