@@ -58,7 +58,6 @@ export default function BookingPage() {
 
     const { data, error: rpcErr } = await supabase.rpc('check_and_create_booking', {
       p_vehicle_id: id,
-      p_renter_id: user.id,
       p_start_date: new Date(startDate).toISOString(),
       p_end_date: new Date(endDate).toISOString(),
     });
