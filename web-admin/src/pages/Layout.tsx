@@ -64,7 +64,9 @@ export default function Layout() {
                 <div className="sidebar-brand">
                     <div className="brand-icon">🚗</div>
                     <div className="brand-text">
-                        <span className="brand-name">RentEase</span>
+                        <span className="brand-name">
+                            Rent<span style={{ color: '#2563eb' }}>Ease</span>
+                        </span>
                         <span className="brand-tag">Admin Portal</span>
                     </div>
                 </div>

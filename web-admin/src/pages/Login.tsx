@@ -46,7 +46,9 @@ export default function Login() {
                 <div className="login-logo-area">
                     <div className="login-logo-icon">🚗</div>
                     <div>
-                        <h1 className="login-title">RentEase</h1>
+                        <h1 className="login-title">
+                            Rent<span style={{ color: '#2563eb' }}>Ease</span>
+                        </h1>
                         <p className="login-badge">Admin Portal</p>
                     </div>
                 </div>
