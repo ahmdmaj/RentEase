@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { BarChart3, RefreshCw, Users, Car, CalendarDays, CheckCircle, CircleDollarSign, Key, ClipboardList, Hourglass } from 'lucide-react';
 import './Dashboard.css';
 
 type Stats = {
@@ -132,19 +133,22 @@ export default function Dashboard() {
         <div className="dashboard">
             {/* Page Header */}
             <div className="dashboard-header">
-                <div>
-                    <h1>📊 Dashboard</h1>
-                    <p className="dashboard-subtitle">Welcome back! Here's what's happening with RentEase.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <BarChart3 size={32} color="#0f172a" />
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p className="dashboard-subtitle">Welcome back! Here's what's happening with RentEase.</p>
+                    </div>
                 </div>
                 <button className="refresh-btn" onClick={fetchDashboardData}>
-                    🔄 Refresh
+                    <RefreshCw size={16} /> Refresh
                 </button>
             </div>
 
             {/* Stats Grid */}
             <div className="stats-grid">
                 <div className="stat-card stat-blue" onClick={() => navigate('/users')}>
-                    <div className="stat-icon">👤</div>
+                    <div className="stat-icon"><Users size={28} strokeWidth={2.5} /></div>
                     <div className="stat-content">
                         <div className="stat-number">{stats.totalUsers}</div>
                         <div className="stat-label">Total Users</div>
@@ -152,7 +156,7 @@ export default function Dashboard() {
                     <div className="stat-arrow">→</div>
                 </div>
                 <div className="stat-card stat-green" onClick={() => navigate('/vehicles')}>
-                    <div className="stat-icon">🚗</div>
+                    <div className="stat-icon"><Car size={28} strokeWidth={2.5} /></div>
                     <div className="stat-content">
                         <div className="stat-number">{stats.totalVehicles}</div>
                         <div className="stat-label">Total Vehicles</div>
@@ -160,7 +164,7 @@ export default function Dashboard() {
                     <div className="stat-arrow">→</div>
                 </div>
                 <div className="stat-card stat-purple" onClick={() => navigate('/bookings')}>
-                    <div className="stat-icon">📅</div>
+                    <div className="stat-icon"><CalendarDays size={28} strokeWidth={2.5} /></div>
                     <div className="stat-content">
                         <div className="stat-number">{stats.totalBookings}</div>
                         <div className="stat-label">Total Bookings</div>
@@ -168,7 +172,7 @@ export default function Dashboard() {
                     <div className="stat-arrow">→</div>
                 </div>
                 <div className="stat-card stat-orange" onClick={() => navigate('/approvals')}>
-                    <div className="stat-icon">✅</div>
+                    <div className="stat-icon"><CheckCircle size={28} strokeWidth={2.5} /></div>
                     <div className="stat-content">
                         <div className="stat-number">{stats.pendingApprovals}</div>
                         <div className="stat-label">Pending Approvals</div>
@@ -176,14 +180,14 @@ export default function Dashboard() {
                     <div className="stat-arrow">→</div>
                 </div>
                 <div className="stat-card stat-emerald">
-                    <div className="stat-icon">💰</div>
+                    <div className="stat-icon"><CircleDollarSign size={28} strokeWidth={2.5} /></div>
                     <div className="stat-content">
                         <div className="stat-number stat-small">{formatCurrency(stats.totalRevenue)}</div>
                         <div className="stat-label">Total Revenue</div>
                     </div>
                 </div>
                 <div className="stat-card stat-cyan">
-                    <div className="stat-icon">🔑</div>
+                    <div className="stat-icon"><Key size={28} strokeWidth={2.5} /></div>
                     <div className="stat-content">
                         <div className="stat-number">{stats.activeBookings}</div>
                         <div className="stat-label">Active Rentals</div>
@@ -196,7 +200,9 @@ export default function Dashboard() {
                 {/* Recent Bookings */}
                 <div className="dashboard-card">
                     <div className="card-header-row">
-                        <h2>📋 Recent Bookings</h2>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <ClipboardList size={22} className="text-slate-500" /> Recent Bookings
+                        </h2>
                         <button className="view-all-btn" onClick={() => navigate('/bookings')}>View All</button>
                     </div>
                     {recentBookings.length === 0 ? (
@@ -243,11 +249,13 @@ export default function Dashboard() {
                 {/* Pending Owner Approvals */}
                 <div className="dashboard-card">
                     <div className="card-header-row">
-                        <h2>⏳ Pending Approvals</h2>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Hourglass size={22} className="text-slate-500" /> Pending Approvals
+                        </h2>
                         <button className="view-all-btn" onClick={() => navigate('/approvals')}>View All</button>
                     </div>
                     {pendingApprovals.length === 0 ? (
-                        <div className="empty-widget">🎉 All owners verified!</div>
+                        <div className="empty-widget">All owners verified!</div>
                     ) : (
                         <div className="approvals-list">
                             {pendingApprovals.map((app) => (
