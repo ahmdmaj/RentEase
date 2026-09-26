@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import type { Vehicle } from '../../lib/types';
 
-const VEHICLE_TYPES = ['All', 'Car', 'Bike', 'Scooter', 'SUV', 'Van'];
+const VEHICLE_TYPES = ['All', 'Car', 'Bike', 'Scooter', 'SUV', 'Van', 'Truck'];
 
 function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   const thumb = vehicle.vehicle_images?.[0]?.image_url ?? null;
@@ -98,18 +98,22 @@ export default function HomePage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [error, setError] = useState('');
-  const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const pageRef = useRef(0);
 
   const PAGE_SIZE = 12;
 
   const fetchVehicles = useCallback(async (reset = false) => {
-    if (reset) setLoading(true);
-    else setLoadingMore(true);
+    if (reset) {
+      setLoading(true);
+      pageRef.current = 0;
+    } else {
+      setLoadingMore(true);
+    }
     
     setError('');
-    const currentPage = reset ? 0 : page;
+    const currentPage = pageRef.current;
 
     let query = supabase
       .from('vehicles')
@@ -131,6 +135,7 @@ export default function HomePage() {
     if (err) {
       setError('Failed to load vehicles. Please try again.');
       setLoading(false);
+      setLoadingMore(false);
       return;
     }
 
@@ -147,16 +152,20 @@ export default function HomePage() {
     if (reset) {
       setVehicles(results);
     } else {
-      setVehicles(prev => [...prev, ...results]);
+      setVehicles(prev => {
+        // filter out duplicates to be safe
+        const existingIds = new Set(prev.map(p => p.id));
+        const newResults = results.filter(r => !existingIds.has(r.id));
+        return [...prev, ...newResults];
+      });
     }
     
     setHasMore(results.length === PAGE_SIZE);
-    if (!reset) setPage(currentPage + 1);
-    else setPage(1);
+    pageRef.current = currentPage + 1;
 
     setLoading(false);
     setLoadingMore(false);
-  }, [search, typeFilter, page]);
+  }, [search, typeFilter]);
 
   useEffect(() => {
     // Wrap in try-catch to ensure loading state is reset on unexpected errors
@@ -173,6 +182,32 @@ export default function HomePage() {
     e.preventDefault();
     fetchVehicles(true);
   };
+
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (loading || loadingMore || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchVehicles(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [loading, loadingMore, hasMore, fetchVehicles]);
 
   return (
     <div>
@@ -250,17 +285,13 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {vehicles.map((v) => <VehicleCard key={v.id} vehicle={v} />)}
           </div>
-          {hasMore && (
-            <div className="flex justify-center mb-12">
-              <button 
-                onClick={() => fetchVehicles(false)} 
-                disabled={loadingMore}
-                className="btn-outline px-8 py-2.5"
-              >
-                {loadingMore ? 'Loading...' : 'Load More'}
-              </button>
-            </div>
-          )}
+          
+          {/* Infinite Scroll Sentinel */}
+          <div ref={observerTarget} className="h-10 w-full flex justify-center pb-12">
+            {loadingMore && (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            )}
+          </div>
         </>
       )}
     </div>
