@@ -62,7 +62,6 @@ export default function Layout() {
             <aside className="sidebar">
                 {/* Brand */}
                 <div className="sidebar-brand">
-                    <div className="brand-icon">🚗</div>
                     <div className="brand-text">
                         <span className="brand-name">
                             Rent<span style={{ color: '#2563eb' }}>Ease</span>
