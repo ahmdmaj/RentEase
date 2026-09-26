@@ -3,6 +3,7 @@
 -- Populates the database with realistic demo data for portfolio showcasing.
 -- Can be run multiple times safely (idempotent).
 -- =============================================================
+SET search_path TO public, extensions;
 
 -- =============================================================
 -- 1. AUTH & PROFILES

@@ -51,7 +51,6 @@ beforeAll(async () => {
   const { data: vehicles } = await sb
     .from('vehicles')
     .select('id, price_per_day')
-    .eq('is_active', true)
     .limit(1);
 
   testVehicleId = vehicles?.[0]?.id;

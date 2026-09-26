@@ -115,7 +115,6 @@ export default function HomePage() {
       .from('vehicles')
       .select('*, vehicle_images(id, image_url, display_order)')
       .eq('is_available', true)
-      .eq('is_active', true)
       .order('created_at', { ascending: false })
       .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
 

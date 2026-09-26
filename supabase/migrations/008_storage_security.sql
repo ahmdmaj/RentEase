@@ -18,7 +18,7 @@ ON CONFLICT (id) DO UPDATE SET
   allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp'];
 
 -- 2. Enable RLS on storage.objects
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
 
 -- 3. Drop existing permissive policies if any
 DROP POLICY IF EXISTS "Public access to vehicle-images" ON storage.objects;
