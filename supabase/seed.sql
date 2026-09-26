@@ -50,26 +50,32 @@ ALTER TABLE public.profiles ENABLE TRIGGER ensure_secure_role_update;
 -- =============================================================
 -- 2. VEHICLES
 -- =============================================================
-INSERT INTO public.vehicles (id, owner_id, make, model, year, transmission, fuel_type, seating_capacity, location, price_per_day, description, is_available)
+INSERT INTO public.vehicles (id, owner_id, make, model, year, transmission, fuel_type, seating_capacity, location, price_per_day, description, is_available, vehicle_type)
 VALUES
-  ('e1b1c1d1-0000-0000-0000-000000000001', 'd43425b0-0000-0000-0000-000000000002', 'Toyota', 'Prius', 2020, 'Automatic', 'Hybrid', 5, 'Colombo', 8000, 'Well maintained hybrid car, excellent fuel economy.', true),
-  ('e1b1c1d1-0000-0000-0000-000000000002', 'd43425b0-0000-0000-0000-000000000002', 'Honda', 'Vezel', 2019, 'Automatic', 'Hybrid', 5, 'Colombo', 10000, 'Comfortable and spacious SUV for family trips.', true),
-  ('e1b1c1d1-0000-0000-0000-000000000003', 'd43425b0-0000-0000-0000-000000000003', 'Suzuki', 'Wagon R', 2018, 'Automatic', 'Petrol', 4, 'Kandy', 5000, 'Economical city car, perfect for tight parking spots.', true),
-  ('e1b1c1d1-0000-0000-0000-000000000004', 'd43425b0-0000-0000-0000-000000000003', 'Toyota', 'Hiace', 2015, 'Manual', 'Diesel', 14, 'Kandy', 15000, 'Spacious van for group trips and tours.', true),
-  ('e1b1c1d1-0000-0000-0000-000000000005', 'd43425b0-0000-0000-0000-000000000003', 'Yamaha', 'FZ', 2021, 'Manual', 'Petrol', 2, 'Kandy', 3000, 'Sporty bike for quick and scenic travel.', true)
-ON CONFLICT (id) DO NOTHING;
+  ('e1b1c1d1-0000-0000-0000-000000000001', 'd43425b0-0000-0000-0000-000000000002', 'Toyota', 'Prius', 2020, 'Automatic', 'Hybrid', 5, 'Colombo', 8000, 'Well maintained hybrid car, excellent fuel economy.', true, 'Car'),
+  ('e1b1c1d1-0000-0000-0000-000000000002', 'd43425b0-0000-0000-0000-000000000002', 'Honda', 'Vezel', 2019, 'Automatic', 'Hybrid', 5, 'Colombo', 10000, 'Comfortable and spacious SUV for family trips.', true, 'SUV'),
+  ('e1b1c1d1-0000-0000-0000-000000000003', 'd43425b0-0000-0000-0000-000000000003', 'Suzuki', 'Wagon R', 2018, 'Automatic', 'Petrol', 4, 'Kandy', 5000, 'Economical city car, perfect for tight parking spots.', true, 'Car'),
+  ('e1b1c1d1-0000-0000-0000-000000000004', 'd43425b0-0000-0000-0000-000000000003', 'Toyota', 'Hiace', 2015, 'Manual', 'Diesel', 14, 'Kandy', 15000, 'Spacious van for group trips and tours.', true, 'Van'),
+  ('e1b1c1d1-0000-0000-0000-000000000005', 'd43425b0-0000-0000-0000-000000000003', 'Yamaha', 'FZ', 2021, 'Manual', 'Petrol', 2, 'Kandy', 3000, 'Sporty bike for quick and scenic travel.', true, 'Bike'),
+  ('e1b1c1d1-0000-0000-0000-000000000006', 'd43425b0-0000-0000-0000-000000000002', 'Honda', 'Dio', 2022, 'Automatic', 'Petrol', 2, 'Colombo', 2000, 'Easy to ride scooter, perfect for city commutes.', true, 'Scooter'),
+  ('e1b1c1d1-0000-0000-0000-000000000007', 'd43425b0-0000-0000-0000-000000000003', 'Nissan', 'Leaf', 2020, 'Automatic', 'Electric', 5, 'Galle', 7000, 'Fully electric car, smooth and eco-friendly.', true, 'Car'),
+  ('e1b1c1d1-0000-0000-0000-000000000008', 'd43425b0-0000-0000-0000-000000000002', 'Land Rover', 'Defender', 2022, 'Automatic', 'Diesel', 5, 'Colombo', 35000, 'Premium SUV for luxury and off-road capability.', true, 'SUV')
+ON CONFLICT (id) DO UPDATE SET vehicle_type = EXCLUDED.vehicle_type;
 
 -- =============================================================
 -- 3. VEHICLE IMAGES
 -- =============================================================
 INSERT INTO public.vehicle_images (id, vehicle_id, image_url, display_order)
 VALUES
-  ('f1b1c1d1-0000-0000-0000-000000000001', 'e1b1c1d1-0000-0000-0000-000000000001', 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=800', 0),
-  ('f1b1c1d1-0000-0000-0000-000000000002', 'e1b1c1d1-0000-0000-0000-000000000002', 'https://images.unsplash.com/photo-1568844293986-8d0400bc4745?auto=format&fit=crop&q=80&w=800', 0),
-  ('f1b1c1d1-0000-0000-0000-000000000003', 'e1b1c1d1-0000-0000-0000-000000000003', 'https://images.unsplash.com/photo-1621007947382-d43db054e582?auto=format&fit=crop&q=80&w=800', 0),
-  ('f1b1c1d1-0000-0000-0000-000000000004', 'e1b1c1d1-0000-0000-0000-000000000004', 'https://images.unsplash.com/photo-1583267746897-2cf415887172?auto=format&fit=crop&q=80&w=800', 0),
-  ('f1b1c1d1-0000-0000-0000-000000000005', 'e1b1c1d1-0000-0000-0000-000000000005', 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800', 0)
-ON CONFLICT (id) DO NOTHING;
+  ('f1b1c1d1-0000-0000-0000-000000000001', 'e1b1c1d1-0000-0000-0000-000000000001', 'https://upload.wikimedia.org/wikipedia/commons/2/23/2016_Toyota_Prius_%28ZVW50R%29_hybrid_liftback_%282018-09-17%29_01.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000002', 'e1b1c1d1-0000-0000-0000-000000000002', 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Honda_Vezel_Hybrid_Z_AWD_front.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000003', 'e1b1c1d1-0000-0000-0000-000000000003', 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Suzuki_Wagon_R_Hybrid_FX_MH55S.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000004', 'e1b1c1d1-0000-0000-0000-000000000004', 'https://upload.wikimedia.org/wikipedia/commons/0/04/Toyota_HiAce_Van_DX_%2720_%281%29.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000005', 'e1b1c1d1-0000-0000-0000-000000000005', 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Yamaha_FZ_16_India.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000006', 'e1b1c1d1-0000-0000-0000-000000000006', 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Honda_Dio_BS4_2017.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000007', 'e1b1c1d1-0000-0000-0000-000000000007', 'https://upload.wikimedia.org/wikipedia/commons/4/47/2018_Nissan_Leaf_%28ZE1%29.jpg', 0),
+  ('f1b1c1d1-0000-0000-0000-000000000008', 'e1b1c1d1-0000-0000-0000-000000000008', 'https://upload.wikimedia.org/wikipedia/commons/4/49/2020_Land_Rover_Defender.jpg', 0)
+ON CONFLICT (id) DO UPDATE SET image_url = EXCLUDED.image_url;
 
 -- =============================================================
 -- 4. BOOKINGS
